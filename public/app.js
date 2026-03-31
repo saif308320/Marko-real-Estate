@@ -195,7 +195,7 @@ function addBotMessage(text) {
   row.className = 'msg-row bot';
   row.innerHTML = `
     <div class="agent-avatar">
-      <img src="Gold_house_speech_bubble_logo.png" alt="M" class="avatar-logo" onerror="this.style.display='none';this.parentNode.textContent='M'">
+      <img src="logoheader.png" alt="M" class="avatar-logo" onerror="this.style.display='none';this.parentNode.textContent='M'">
     </div>
     <div>
       <div class="bubble bot">${fmt(text)}</div>
