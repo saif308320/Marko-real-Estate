@@ -6,6 +6,15 @@ let quickRepliesHidden = false;
 
 // ─── INIT ─────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', async () => {
+  // Hide loader after 3 seconds
+  setTimeout(() => {
+    const loader = document.getElementById('markonix-preloader');
+    if (loader) {
+      loader.classList.add('exit');
+      setTimeout(() => loader.style.display = 'none', 800);
+    }
+  }, 3000);
+
   await initSession();
   setupTextarea();
   addDateDivider('Today');
@@ -14,10 +23,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 
 async function initSession() {
   const stored = sessionStorage.getItem('markonix_session');
-  if (stored) {
-    sessionId = stored;
-    return;
-  }
+  if (stored) { sessionId = stored; return; }
   try {
     const res = await fetch('/api/session', { method: 'POST' });
     const data = await res.json();
@@ -82,10 +88,7 @@ async function sendTextMessage(text) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ message: text, sessionId })
   });
-  if (!res.ok) {
-    const e = await res.json();
-    throw new Error(e.error || 'Server error');
-  }
+  if (!res.ok) { const e = await res.json(); throw new Error(e.error || 'Server error'); }
   const data = await res.json();
   return data.reply;
 }
@@ -96,14 +99,8 @@ async function sendImageMessage(text, file) {
   formData.append('message', text || 'Please analyze this property photo');
   formData.append('sessionId', sessionId);
 
-  const res = await fetch('/api/chat/image', {
-    method: 'POST',
-    body: formData
-  });
-  if (!res.ok) {
-    const e = await res.json();
-    throw new Error(e.error || 'Server error');
-  }
+  const res = await fetch('/api/chat/image', { method: 'POST', body: formData });
+  if (!res.ok) { const e = await res.json(); throw new Error(e.error || 'Server error'); }
   const data = await res.json();
   return data.reply;
 }
@@ -116,9 +113,7 @@ function sendQuick(text) {
 
 // ─── CLEAR CHAT ───────────────────────────────────────
 async function clearChat() {
-  if (sessionId) {
-    fetch(`/api/session/${sessionId}`, { method: 'DELETE' }).catch(() => {});
-  }
+  if (sessionId) fetch(`/api/session/${sessionId}`, { method: 'DELETE' }).catch(() => {});
   sessionStorage.removeItem('markonix_session');
   sessionId = null;
   selectedImageFile = null;
@@ -127,7 +122,7 @@ async function clearChat() {
   msgs.innerHTML = `
     <div class="welcome-block">
       <div class="welcome-icon">
-        <img src="Gold_house_speech_bubble_logo.png" alt="Markonix" class="welcome-logo">
+        <img src="./logoheader.png" alt="Markonix" class="welcome-logo">
       </div>
       <h2>Welcome to Markonix Real Estate</h2>
       <p>Pakistan's premium property consultancy — Karachi to Islamabad</p>
@@ -148,7 +143,6 @@ function handleImageSelect(input) {
   const file = input.files[0];
   if (!file) return;
   selectedImageFile = file;
-
   const reader = new FileReader();
   reader.onload = (e) => {
     document.getElementById('preview-img').src = e.target.result;
@@ -187,7 +181,6 @@ function addUserMessage(text, imageFile) {
 
 function addBotMessage(text) {
   const msgs = document.getElementById('messages');
-
   const wb = msgs.querySelector('.welcome-block');
   if (wb) wb.remove();
 
@@ -195,7 +188,7 @@ function addBotMessage(text) {
   row.className = 'msg-row bot';
   row.innerHTML = `
     <div class="agent-avatar">
-      <img src="logoheader.png" alt="M" class="avatar-logo" onerror="this.style.display='none';this.parentNode.textContent='M'">
+      <img src="./logoheader.png" alt="M" class="avatar-logo" onerror="this.style.display='none';this.parentNode.textContent='M'">
     </div>
     <div>
       <div class="bubble bot">${fmt(text)}</div>
@@ -214,8 +207,7 @@ function addDateDivider(label) {
 }
 
 function showTyping() {
-  const t = document.getElementById('typing-indicator');
-  t.classList.add('visible');
+  document.getElementById('typing-indicator').classList.add('visible');
   scrollBottom();
 }
 
@@ -245,9 +237,7 @@ function getTime() {
   return new Date().toLocaleTimeString('en-PK', { hour: '2-digit', minute: '2-digit' });
 }
 
-function delay(ms) {
-  return new Promise(r => setTimeout(r, ms));
-}
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 function esc(t) {
   return t
