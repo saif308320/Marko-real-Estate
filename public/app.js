@@ -6,7 +6,6 @@ let quickRepliesHidden = false;
 
 // ─── INIT ─────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', async () => {
-  // Hide loader after 3 seconds
   setTimeout(() => {
     const loader = document.getElementById('markonix-preloader');
     if (loader) {
@@ -246,11 +245,33 @@ function esc(t) {
 }
 
 function fmt(t) {
-  return t
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.*?)\*/g, '<em>$1</em>')
-    .replace(/\n/g, '<br>');
+  // 1. Escape HTML first
+  let out = t
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+
+  // 2. Bold **text**
+  out = out.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+  // 3. Italic *text*
+  out = out.replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+  // 4. Property image tag [PROPERTY_IMAGE:url]
+  out = out.replace(/\[PROPERTY_IMAGE:(.*?)\]/g, (_, url) =>
+    `<img src="${url.trim()}" alt="Property" style="max-width:100%;border-radius:12px;margin-top:10px;display:block;border:1px solid var(--border);">`
+  );
+
+  // 5. Markdown links [text](url) → clickable anchor
+  out = out.replace(
+    /\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g,
+    '<a href="$2" target="_blank" rel="noopener noreferrer" style="color:var(--gold);text-decoration:underline;font-weight:600;">$1 ↗</a>'
+  );
+
+  // 6. Newlines → <br>
+  out = out.replace(/\n/g, '<br>');
+
+  return out;
 }
 
 // ─── TEXTAREA AUTO-RESIZE ──────────────────────────────

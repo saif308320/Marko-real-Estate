@@ -11,6 +11,7 @@ const PORT = process.env.PORT || 3000;
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
 const GMAIL_USER = process.env.GMAIL_USER;
 const GMAIL_PASS = process.env.GMAIL_PASS;
+const UNSPLASH_KEY = process.env.UNSPLASH_KEY || 'wucMrztmU7hP41X5C-cxqm66wkgbr55d-EW7RhAfVag';
 
 const sessions = new Map();
 
@@ -30,7 +31,6 @@ app.use(express.static(path.join(__dirname, '../public')));
 
 // ─── AREA → GOOGLE MAPS LINKS ─────────────────────────
 const AREA_MAPS = {
-  // Karachi
   'dha karachi': 'https://www.google.com/maps/search/DHA+Karachi',
   'dha phase 6': 'https://www.google.com/maps/search/DHA+Phase+6+Karachi',
   'dha phase 8': 'https://www.google.com/maps/search/DHA+Phase+8+Karachi',
@@ -53,14 +53,12 @@ const AREA_MAPS = {
   'saadi town': 'https://www.google.com/maps/search/Saadi+Town+Karachi',
   'landhi': 'https://www.google.com/maps/search/Landhi+Karachi',
   'orangi': 'https://www.google.com/maps/search/Orangi+Town+Karachi',
-  // Lahore
   'dha lahore': 'https://www.google.com/maps/search/DHA+Lahore',
   'bahria town lahore': 'https://www.google.com/maps/search/Bahria+Town+Lahore',
   'gulberg lahore': 'https://www.google.com/maps/search/Gulberg+Lahore',
   'model town lahore': 'https://www.google.com/maps/search/Model+Town+Lahore',
   'johar town': 'https://www.google.com/maps/search/Johar+Town+Lahore',
   'valencia lahore': 'https://www.google.com/maps/search/Valencia+Housing+Lahore',
-  // Islamabad
   'f-7': 'https://www.google.com/maps/search/F-7+Islamabad',
   'f-6': 'https://www.google.com/maps/search/F-6+Islamabad',
   'f-10': 'https://www.google.com/maps/search/F-10+Islamabad',
@@ -80,6 +78,49 @@ function getMapLink(text) {
     }
   }
   return '';
+}
+
+// ─── UNSPLASH PROPERTY IMAGES ──────────────────────────
+const PROPERTY_KEYWORDS = {
+  'villa': 'luxury villa exterior',
+  'dha': 'luxury house modern exterior',
+  'bahria': 'modern house bahria town',
+  'clifton': 'luxury apartment interior',
+  'gulshan': 'house interior modern',
+  'defence': 'luxury house modern exterior',
+  'defense': 'luxury house modern exterior',
+  'apartment': 'modern apartment interior living room',
+  'flat': 'modern apartment interior',
+  'plot': 'residential land plot',
+  'commercial': 'modern commercial building exterior',
+  'office': 'modern office interior',
+  'shop': 'modern retail shop interior',
+  'ghar': 'luxury house interior modern',
+  'house': 'luxury house exterior modern',
+  'property': 'luxury real estate house',
+};
+
+async function getPropertyImage(userMessage) {
+  try {
+    const lower = userMessage.toLowerCase();
+    let keyword = 'luxury house modern exterior';
+    for (const [key, val] of Object.entries(PROPERTY_KEYWORDS)) {
+      if (lower.includes(key)) { keyword = val; break; }
+    }
+    const encoded = encodeURIComponent(keyword);
+    const res = await fetch(
+      `https://api.unsplash.com/search/photos?query=${encoded}&per_page=5&orientation=landscape`,
+      { headers: { 'Authorization': `Client-ID ${UNSPLASH_KEY}` } }
+    );
+    const data = await res.json();
+    if (data.results && data.results.length > 0) {
+      const idx = Math.floor(Math.random() * Math.min(5, data.results.length));
+      return data.results[idx].urls.regular;
+    }
+  } catch (e) {
+    console.error('Unsplash error:', e);
+  }
+  return null;
 }
 
 // ─── EMAIL TRANSPORTER ────────────────────────────────
@@ -193,10 +234,11 @@ const SYSTEM_PROMPT = `You are Alex — a senior property consultant at Markonix
 
 ═══ LANGUAGE — NON-NEGOTIABLE ═══
 Detect from the user's VERY FIRST message:
-- English message → pure English only, zero Urdu
-- Roman Urdu → Roman Urdu only. Use Pakistani words: "ha", "tha", "me", "karo", "lo", "yaar", "bhai". NEVER use Hindi: "hai", "hain", "mein", "kijiye"
+- English only message → reply in pure English only. Zero Urdu, zero Roman Urdu. Never use words like "yaar", "bhai", "ha", "tha", "karo".
+- Roman Urdu message → Roman Urdu only. Use Pakistani words: "ha", "tha", "me", "karo", "lo", "yaar", "bhai". NEVER use Hindi: "hai", "hain", "mein", "kijiye"
 - Urdu script → Urdu script only
 Switch immediately if user switches. No mixing unless user mixes first.
+CRITICAL: If user writes in English, your ENTIRE reply must be in English only.
 
 ═══ WHO YOU ARE ═══
 You've been in this industry 10+ years. You know Karachi, Lahore, Islamabad like the back of your hand. You speak plainly, never like a brochure. You genuinely care about getting people the right deal — not just closing fast. You remember what people told you and use it. You never repeat the same thing twice in a conversation.
@@ -216,6 +258,11 @@ When user mentions a specific area or locality → add at end of your reply:
 [MAP_AREA]area name as mentioned[/MAP_AREA]
 Example: user says "Defence mein ghar chahiye" → add [MAP_AREA]Defence Karachi[/MAP_AREA]
 The system auto-attaches the Google Maps link. Do NOT write the URL yourself.
+
+═══ IMAGE TRIGGER ═══
+When user asks about a property type or area and you want to show them what it looks like → add at end of reply:
+[SHOW_IMAGE]
+The system will auto-fetch a relevant property photo. Only use once per reply.
 
 ═══ OBJECTION HANDLING ═══
 - "Expensive" → "Exact budget batao bhai, market mein options hote hain — aapko surprise karunga"
@@ -275,7 +322,8 @@ setInterval(() => {
   }
 }, 30 * 60 * 1000);
 
-async function processLeadFromReply(reply, session) {
+async function processLeadFromReply(reply, session, userMessage = '') {
+  // Lead capture
   const leadMatch = reply.match(/\[LEAD_CAPTURED\](.*?)\[\/LEAD_CAPTURED\]/s);
   if (leadMatch && !session.leadCaptured) {
     try {
@@ -290,18 +338,28 @@ async function processLeadFromReply(reply, session) {
     }
   }
 
+  // Map link
   let mapLink = '';
   const mapMatch = reply.match(/\[MAP_AREA\](.*?)\[\/MAP_AREA\]/s);
   if (mapMatch) {
     mapLink = getMapLink(mapMatch[1].trim());
   }
 
+  // Property image
+  let imageTag = '';
+  if (reply.includes('[SHOW_IMAGE]')) {
+    const imgUrl = await getPropertyImage(userMessage || reply);
+    if (imgUrl) imageTag = `\n[PROPERTY_IMAGE:${imgUrl}]`;
+  }
+
+  // Clean reply
   let clean = reply
     .replace(/\[LEAD_CAPTURED\].*?\[\/LEAD_CAPTURED\]/s, '')
     .replace(/\[MAP_AREA\].*?\[\/MAP_AREA\]/s, '')
+    .replace(/\[SHOW_IMAGE\]/g, '')
     .trim();
 
-  return clean + mapLink;
+  return clean + mapLink + imageTag;
 }
 
 // ─── ROUTES ───────────────────────────────────────────
@@ -312,7 +370,7 @@ app.post('/api/chat', async (req, res) => {
     const session = getSession(sessionId);
     session.history.push({ role: 'user', content: message });
     let reply = await callGroq(session.history);
-    reply = await processLeadFromReply(reply, session);
+    reply = await processLeadFromReply(reply, session, message);
     session.history.push({ role: 'assistant', content: reply });
     res.json({ reply, sessionId });
   } catch (err) {
@@ -334,7 +392,7 @@ app.post('/api/chat/image', upload.single('image'), async (req, res) => {
     userContent.push({ type: 'text', text: message || 'Please analyze this property photo' });
     session.history.push({ role: 'user', content: message || '[Property image shared]' });
     let reply = await callGroqVision([...session.history.slice(0, -1), { role: 'user', content: userContent }]);
-    reply = await processLeadFromReply(reply, session);
+    reply = await processLeadFromReply(reply, session, message || '');
     session.history.push({ role: 'assistant', content: reply });
     res.json({ reply, sessionId });
   } catch (err) {
