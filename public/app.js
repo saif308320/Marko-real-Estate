@@ -97,7 +97,6 @@ async function sendImageMessage(text, file) {
   formData.append('image', file);
   formData.append('message', text || 'Please analyze this property photo');
   formData.append('sessionId', sessionId);
-
   const res = await fetch('/api/chat/image', { method: 'POST', body: formData });
   if (!res.ok) { const e = await res.json(); throw new Error(e.error || 'Server error'); }
   const data = await res.json();
@@ -171,7 +170,7 @@ function addUserMessage(text, imageFile) {
 
   row.innerHTML = `
     <div>
-      <div class="bubble user">${imgHtml}${text ? esc(text) : ''}</div>
+      <div class="bubble user">${imgHtml}${text ? escHtml(text) : ''}</div>
       <span class="bubble-meta">${getTime()}</span>
     </div>`;
   msgs.appendChild(row);
@@ -238,14 +237,18 @@ function getTime() {
 
 function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
 
-function esc(t) {
+// Escape HTML for user messages (plain text)
+function escHtml(t) {
   return t
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
     .replace(/\n/g, '<br>');
 }
 
+// Format bot messages: markdown + links + images
 function fmt(t) {
-  // 1. Escape HTML first
+  // 1. Escape HTML
   let out = t
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
@@ -257,12 +260,12 @@ function fmt(t) {
   // 3. Italic *text*
   out = out.replace(/\*(.*?)\*/g, '<em>$1</em>');
 
-  // 4. Property image tag [PROPERTY_IMAGE:url]
+  // 4. Property image [PROPERTY_IMAGE:url]
   out = out.replace(/\[PROPERTY_IMAGE:(.*?)\]/g, (_, url) =>
     `<img src="${url.trim()}" alt="Property" style="max-width:100%;border-radius:12px;margin-top:10px;display:block;border:1px solid var(--border);">`
   );
 
-  // 5. Markdown links [text](url) → clickable anchor
+  // 5. Markdown links [text](url) → clickable <a>
   out = out.replace(
     /\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g,
     '<a href="$2" target="_blank" rel="noopener noreferrer" style="color:var(--gold);text-decoration:underline;font-weight:600;">$1 ↗</a>'

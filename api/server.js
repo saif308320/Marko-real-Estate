@@ -31,13 +31,13 @@ app.use(express.static(path.join(__dirname, '../public')));
 
 // ─── AREA → GOOGLE MAPS LINKS ─────────────────────────
 const AREA_MAPS = {
-  'dha karachi': 'https://www.google.com/maps/search/DHA+Karachi',
   'dha phase 6': 'https://www.google.com/maps/search/DHA+Phase+6+Karachi',
   'dha phase 8': 'https://www.google.com/maps/search/DHA+Phase+8+Karachi',
+  'dha karachi': 'https://www.google.com/maps/search/DHA+Karachi',
   'bahria town karachi': 'https://www.google.com/maps/search/Bahria+Town+Karachi',
   'clifton': 'https://www.google.com/maps/search/Clifton+Karachi',
-  'gulshan': 'https://www.google.com/maps/search/Gulshan-e-Iqbal+Karachi',
   'gulshan e iqbal': 'https://www.google.com/maps/search/Gulshan-e-Iqbal+Karachi',
+  'gulshan': 'https://www.google.com/maps/search/Gulshan-e-Iqbal+Karachi',
   'nazimabad': 'https://www.google.com/maps/search/Nazimabad+Karachi',
   'north nazimabad': 'https://www.google.com/maps/search/North+Nazimabad+Karachi',
   'pechs': 'https://www.google.com/maps/search/PECHS+Karachi',
@@ -47,10 +47,7 @@ const AREA_MAPS = {
   'scheme 33': 'https://www.google.com/maps/search/Scheme+33+Karachi',
   'korangi': 'https://www.google.com/maps/search/Korangi+Karachi',
   'fb area': 'https://www.google.com/maps/search/FB+Area+Karachi',
-  'federal b area': 'https://www.google.com/maps/search/Federal+B+Area+Karachi',
   'surjani': 'https://www.google.com/maps/search/Surjani+Town+Karachi',
-  'model colony': 'https://www.google.com/maps/search/Model+Colony+Karachi',
-  'saadi town': 'https://www.google.com/maps/search/Saadi+Town+Karachi',
   'landhi': 'https://www.google.com/maps/search/Landhi+Karachi',
   'orangi': 'https://www.google.com/maps/search/Orangi+Town+Karachi',
   'dha lahore': 'https://www.google.com/maps/search/DHA+Lahore',
@@ -58,14 +55,12 @@ const AREA_MAPS = {
   'gulberg lahore': 'https://www.google.com/maps/search/Gulberg+Lahore',
   'model town lahore': 'https://www.google.com/maps/search/Model+Town+Lahore',
   'johar town': 'https://www.google.com/maps/search/Johar+Town+Lahore',
-  'valencia lahore': 'https://www.google.com/maps/search/Valencia+Housing+Lahore',
   'f-7': 'https://www.google.com/maps/search/F-7+Islamabad',
   'f-6': 'https://www.google.com/maps/search/F-6+Islamabad',
   'f-10': 'https://www.google.com/maps/search/F-10+Islamabad',
   'g-13': 'https://www.google.com/maps/search/G-13+Islamabad',
   'bahria town islamabad': 'https://www.google.com/maps/search/Bahria+Town+Islamabad',
   'dha islamabad': 'https://www.google.com/maps/search/DHA+Islamabad',
-  'e-7': 'https://www.google.com/maps/search/E-7+Islamabad',
   'blue area': 'https://www.google.com/maps/search/Blue+Area+Islamabad',
 };
 
@@ -84,7 +79,7 @@ function getMapLink(text) {
 const PROPERTY_KEYWORDS = {
   'villa': 'luxury villa exterior',
   'dha': 'luxury house modern exterior',
-  'bahria': 'modern house bahria town',
+  'bahria': 'modern house exterior',
   'clifton': 'luxury apartment interior',
   'gulshan': 'house interior modern',
   'defence': 'luxury house modern exterior',
@@ -129,94 +124,111 @@ const transporter = nodemailer.createTransport({
   auth: { user: GMAIL_USER, pass: GMAIL_PASS }
 });
 
-// ─── PROFESSIONAL EMAIL TEMPLATE ─────────────────────
+// ─── EMAIL TEMPLATE ───────────────────────────────────
 async function sendLeadEmail(leadData) {
   const { name, phone, city, propertyType, budget, extra } = leadData;
-  const time = new Date().toLocaleString('en-PK', { timeZone: 'Asia/Karachi', dateStyle: 'full', timeStyle: 'short' });
+  const time = new Date().toLocaleString('en-PK', {
+    timeZone: 'Asia/Karachi', dateStyle: 'full', timeStyle: 'short'
+  });
 
   const html = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>New Lead — Markonix Real Estate</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>New Lead — Markonix</title>
 </head>
-<body style="margin:0;padding:0;background:#f0f2f5;font-family:'Segoe UI',Arial,sans-serif;">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f2f5;padding:40px 20px;">
-  <tr><td align="center">
-    <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+<body style="margin:0;padding:0;background:#0d0d0d;font-family:'Segoe UI',Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#0d0d0d;padding:32px 16px;">
+<tr><td align="center">
+<table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;border-radius:20px;overflow:hidden;box-shadow:0 0 60px rgba(201,168,76,0.15);">
 
-      <tr><td style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);border-radius:16px 16px 0 0;padding:36px 40px;text-align:center;">
-        <div style="display:inline-block;background:rgba(201,168,76,0.15);border:1px solid rgba(201,168,76,0.3);border-radius:50%;width:64px;height:64px;line-height:64px;font-size:28px;margin-bottom:16px;">🏠</div>
-        <h1 style="margin:0;color:#c9a84c;font-size:24px;font-weight:700;letter-spacing:1px;">MARKONIX REAL ESTATE</h1>
-        <p style="margin:6px 0 0;color:#a0a8b8;font-size:13px;letter-spacing:2px;text-transform:uppercase;">Lead Notification</p>
-      </td></tr>
+  <tr>
+    <td style="background:#0d0d0d;padding:0;">
+      <table width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+          <td width="45%" style="background:#111111;padding:40px 28px;vertical-align:middle;">
+            <div style="width:44px;height:44px;border:2px solid #c9a84c;border-radius:10px;text-align:center;line-height:44px;margin-bottom:16px;font-size:20px;">🏠</div>
+            <p style="margin:0 0 4px;color:#c9a84c;font-size:9px;letter-spacing:3px;text-transform:uppercase;">Markonix</p>
+            <h1 style="margin:0 0 4px;color:#ffffff;font-size:26px;font-weight:900;line-height:1.1;text-transform:uppercase;">REAL<br>ESTATE</h1>
+            <p style="margin:0;color:#c9a84c;font-size:18px;font-style:italic;font-family:Georgia,serif;">New Lead</p>
+          </td>
+          <td width="55%" style="background:linear-gradient(135deg,#c9a84c 0%,#a07830 100%);padding:40px 20px;vertical-align:middle;text-align:center;">
+            <div style="font-size:60px;line-height:1;">🏡</div>
+            <p style="margin:12px 0 0;color:#1a1100;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;">Hot Prospect</p>
+            <p style="margin:6px 0 0;color:#3d2800;font-size:10px;">Follow up immediately</p>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
 
-      <tr><td style="background:#c9a84c;padding:14px 40px;text-align:center;">
-        <p style="margin:0;color:#1a1a2e;font-size:15px;font-weight:700;">🔥 New Lead Received — Immediate Action Required</p>
-      </td></tr>
+  <tr>
+    <td style="background:#c9a84c;padding:12px 28px;text-align:center;">
+      <p style="margin:0;color:#0d0d0d;font-size:13px;font-weight:800;letter-spacing:1px;text-transform:uppercase;">🔥 Immediate Follow-Up Required</p>
+    </td>
+  </tr>
 
-      <tr><td style="background:#ffffff;padding:40px;">
-        <p style="margin:0 0 24px;color:#555;font-size:14px;line-height:1.6;">
-          A new lead has been captured via the Markonix AI chatbot. Please follow up promptly for best conversion.
-        </p>
+  <tr>
+    <td style="background:#111111;padding:32px 28px;">
+      <p style="margin:0 0 20px;color:#555;font-size:11px;letter-spacing:2px;text-transform:uppercase;border-bottom:1px solid #222;padding-bottom:12px;">Lead Information</p>
 
-        <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #e8e8e8;border-radius:12px;overflow:hidden;">
-          <tr style="background:#f8f9fa;">
-            <td colspan="2" style="padding:14px 20px;border-bottom:1px solid #e8e8e8;">
-              <span style="font-size:12px;font-weight:700;color:#888;letter-spacing:1px;text-transform:uppercase;">Lead Information</span>
-            </td>
-          </tr>
-          <tr style="border-bottom:1px solid #f0f0f0;">
-            <td style="padding:14px 20px;width:140px;color:#888;font-size:13px;font-weight:600;">👤 Full Name</td>
-            <td style="padding:14px 20px;color:#222;font-size:14px;font-weight:600;">${name || '—'}</td>
-          </tr>
-          <tr style="background:#fffbf0;border-bottom:1px solid #f0f0f0;">
-            <td style="padding:14px 20px;color:#888;font-size:13px;font-weight:600;">📞 Phone</td>
-            <td style="padding:14px 20px;">
-              <span style="color:#1a1a2e;font-size:20px;font-weight:700;letter-spacing:0.5px;">${phone || '—'}</span>
-              ${phone ? `<br><a href="tel:${phone}" style="color:#c9a84c;font-size:12px;text-decoration:none;font-weight:600;">📲 Tap to call</a>` : ''}
-            </td>
-          </tr>
-          <tr style="border-bottom:1px solid #f0f0f0;">
-            <td style="padding:14px 20px;color:#888;font-size:13px;font-weight:600;">📍 City / Area</td>
-            <td style="padding:14px 20px;color:#333;font-size:14px;">${city || '—'}</td>
-          </tr>
-          <tr style="background:#f8f9fa;border-bottom:1px solid #f0f0f0;">
-            <td style="padding:14px 20px;color:#888;font-size:13px;font-weight:600;">🏠 Property Type</td>
-            <td style="padding:14px 20px;color:#333;font-size:14px;">${propertyType || '—'}</td>
-          </tr>
-          <tr style="border-bottom:1px solid #f0f0f0;">
-            <td style="padding:14px 20px;color:#888;font-size:13px;font-weight:600;">💰 Budget</td>
-            <td style="padding:14px 20px;color:#2e7d32;font-size:15px;font-weight:700;">${budget || '—'}</td>
-          </tr>
-          <tr>
-            <td style="padding:14px 20px;color:#888;font-size:13px;font-weight:600;">📝 Notes</td>
-            <td style="padding:14px 20px;color:#555;font-size:13px;line-height:1.5;">${extra || 'None'}</td>
-          </tr>
-        </table>
+      <table width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+          <td style="padding:11px 0;border-bottom:1px solid #1e1e1e;width:30px;vertical-align:middle;font-size:14px;">👤</td>
+          <td style="padding:11px 10px;border-bottom:1px solid #1e1e1e;color:#666;font-size:12px;vertical-align:middle;">Full Name</td>
+          <td style="padding:11px 0;border-bottom:1px solid #1e1e1e;color:#fff;font-size:14px;font-weight:700;text-align:right;vertical-align:middle;">${name || '—'}</td>
+        </tr>
+        <tr>
+          <td style="padding:11px 0;border-bottom:1px solid #1e1e1e;font-size:14px;vertical-align:middle;">📞</td>
+          <td style="padding:11px 10px;border-bottom:1px solid #1e1e1e;color:#666;font-size:12px;vertical-align:middle;">Phone</td>
+          <td style="padding:11px 0;border-bottom:1px solid #1e1e1e;text-align:right;vertical-align:middle;">
+            <span style="color:#c9a84c;font-size:17px;font-weight:800;">${phone || '—'}</span>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:11px 0;border-bottom:1px solid #1e1e1e;font-size:14px;vertical-align:middle;">📍</td>
+          <td style="padding:11px 10px;border-bottom:1px solid #1e1e1e;color:#666;font-size:12px;vertical-align:middle;">City / Area</td>
+          <td style="padding:11px 0;border-bottom:1px solid #1e1e1e;color:#fff;font-size:14px;font-weight:600;text-align:right;vertical-align:middle;">${city || '—'}</td>
+        </tr>
+        <tr>
+          <td style="padding:11px 0;border-bottom:1px solid #1e1e1e;font-size:14px;vertical-align:middle;">🏠</td>
+          <td style="padding:11px 10px;border-bottom:1px solid #1e1e1e;color:#666;font-size:12px;vertical-align:middle;">Property Type</td>
+          <td style="padding:11px 0;border-bottom:1px solid #1e1e1e;color:#fff;font-size:14px;font-weight:600;text-align:right;vertical-align:middle;">${propertyType || '—'}</td>
+        </tr>
+        <tr>
+          <td style="padding:11px 0;border-bottom:1px solid #1e1e1e;font-size:14px;vertical-align:middle;">💰</td>
+          <td style="padding:11px 10px;border-bottom:1px solid #1e1e1e;color:#666;font-size:12px;vertical-align:middle;">Budget</td>
+          <td style="padding:11px 0;border-bottom:1px solid #1e1e1e;color:#4ade80;font-size:15px;font-weight:800;text-align:right;vertical-align:middle;">${budget || '—'}</td>
+        </tr>
+        <tr>
+          <td style="padding:11px 0;font-size:14px;vertical-align:top;padding-top:14px;">📝</td>
+          <td style="padding:11px 10px;color:#666;font-size:12px;vertical-align:top;padding-top:14px;">Notes</td>
+          <td style="padding:11px 0;color:#aaa;font-size:13px;text-align:right;vertical-align:top;padding-top:14px;line-height:1.5;">${extra || 'None'}</td>
+        </tr>
+      </table>
 
-        <div style="margin:28px 0;text-align:center;">
-          ${phone ? `<a href="tel:${phone}" style="display:inline-block;background:#c9a84c;color:#1a1a2e;padding:14px 36px;border-radius:8px;font-size:15px;font-weight:700;text-decoration:none;letter-spacing:0.5px;">📞 Call Lead Now</a>` : ''}
-        </div>
+      <div style="margin-top:28px;text-align:center;">
+        ${phone ? `<a href="tel:${phone}" style="display:inline-block;background:#c9a84c;color:#0d0d0d;padding:14px 36px;border-radius:6px;font-size:12px;font-weight:800;text-decoration:none;letter-spacing:2px;text-transform:uppercase;">📞 BOOK NOW &nbsp;·&nbsp; ${phone}</a>` : ''}
+      </div>
 
-        <div style="background:#fff8e1;border-left:4px solid #c9a84c;border-radius:0 8px 8px 0;padding:14px 18px;">
-          <p style="margin:0;color:#7a5f00;font-size:13px;font-weight:600;">⚡ Pro Tip</p>
-          <p style="margin:4px 0 0;color:#7a5f00;font-size:12px;line-height:1.5;">
-            Leads contacted within 5 minutes are 9× more likely to convert. Call now while interest is fresh!
-          </p>
-        </div>
-      </td></tr>
+      <div style="margin-top:22px;border:1px solid #222;border-left:3px solid #c9a84c;border-radius:6px;padding:14px 16px;background:#0d0d0d;">
+        <p style="margin:0 0 4px;color:#c9a84c;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">⚡ Pro Tip</p>
+        <p style="margin:0;color:#555;font-size:12px;line-height:1.6;">Leads contacted within 5 minutes are 9× more likely to convert. Call now!</p>
+      </div>
+    </td>
+  </tr>
 
-      <tr><td style="background:#1a1a2e;border-radius:0 0 16px 16px;padding:24px 40px;text-align:center;">
-        <p style="margin:0;color:#c9a84c;font-size:13px;font-weight:600;">MARKONIX REAL ESTATE</p>
-        <p style="margin:4px 0 0;color:#666;font-size:11px;">AI Chatbot Lead System &nbsp;·&nbsp; ${time}</p>
-        <p style="margin:8px 0 0;color:#444;font-size:10px;">This email was auto-generated. Do not reply directly.</p>
-      </td></tr>
+  <tr>
+    <td style="background:#0a0a0a;padding:18px 28px;text-align:center;border-top:1px solid #1a1a1a;">
+      <p style="margin:0;color:#c9a84c;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;">MARKONIX REAL ESTATE</p>
+      <p style="margin:5px 0 0;color:#333;font-size:10px;">${time} &nbsp;·&nbsp; AI Chatbot Lead System</p>
+    </td>
+  </tr>
 
-    </table>
-  </td></tr>
+</table>
+</td></tr>
 </table>
 </body>
 </html>`;
@@ -224,7 +236,7 @@ async function sendLeadEmail(leadData) {
   await transporter.sendMail({
     from: `"Markonix Bot 🏠" <${GMAIL_USER}>`,
     to: GMAIL_USER,
-    subject: `🔥 Hot Lead: ${name || 'New Client'} | ${phone || 'No phone'} | ${city || '?'} | ${propertyType || '?'}`,
+    subject: `🔥 New Lead: ${name || 'Unknown'} | ${phone || 'No phone'} | ${city || '?'} | ${propertyType || '?'}`,
     html
   });
 }
@@ -234,56 +246,47 @@ const SYSTEM_PROMPT = `You are Alex — a senior property consultant at Markonix
 
 ═══ LANGUAGE — NON-NEGOTIABLE ═══
 Detect from the user's VERY FIRST message:
-- English only message → reply in pure English only. Zero Urdu, zero Roman Urdu. Never use words like "yaar", "bhai", "ha", "tha", "karo".
-- Roman Urdu message → Roman Urdu only. Use Pakistani words: "ha", "tha", "me", "karo", "lo", "yaar", "bhai". NEVER use Hindi: "hai", "hain", "mein", "kijiye"
-- Urdu script → Urdu script only
+- English only → reply in pure English only. ZERO Urdu or Roman Urdu. Never use "yaar", "bhai", "ha", "tha", "karo", "lo".
+- Roman Urdu → Roman Urdu only. Pakistani words: "ha", "tha", "me", "karo", "yaar", "bhai". NEVER Hindi: "hai", "hain", "mein", "kijiye".
+- Urdu script → Urdu script only.
 Switch immediately if user switches. No mixing unless user mixes first.
-CRITICAL: If user writes in English, your ENTIRE reply must be in English only.
 
 ═══ WHO YOU ARE ═══
-You've been in this industry 10+ years. You know Karachi, Lahore, Islamabad like the back of your hand. You speak plainly, never like a brochure. You genuinely care about getting people the right deal — not just closing fast. You remember what people told you and use it. You never repeat the same thing twice in a conversation.
+10+ years in Pakistani real estate. Know Karachi, Lahore, Islamabad inside out. Speak plainly — never like a brochure. Genuinely care about the right deal. Never repeat the same thing twice.
 
 ═══ HOW YOU TALK ═══
-- Like a trusted friend who happens to be an expert. Warm, direct, sometimes funny.
-- React to what they say, not to a script: if they say budget is tight, feel their pain first then offer a solution.
-- Use short sentences. No walls of text. Break it up.
-- You notice things: "aapne DHA mention kia — koi specific phase mein interest ha?"
-- If they send a property photo, actually REACT to it: comment on location, layout, sunlight, potential issues.
-- Never start your reply the same way twice in a row.
+- Trusted friend who is an expert. Warm, direct, sometimes witty.
+- React naturally: if budget is tight, empathize first then solve.
+- Short sentences. No walls of text.
+- Notice details: "aapne DHA mention kia — koi specific phase mein interest ha?"
+- If they send a property photo, comment on location, layout, sunlight, issues.
+- Never start reply the same way twice in a row.
 - End with ONE clear next step — never two questions at once.
-- Max 4-5 lines unless they asked for detail.
+- Max 4-5 lines unless detail was asked.
 
-═══ MAP TRIGGER ═══
-When user mentions a specific area or locality → add at end of your reply:
-[MAP_AREA]area name as mentioned[/MAP_AREA]
-Example: user says "Defence mein ghar chahiye" → add [MAP_AREA]Defence Karachi[/MAP_AREA]
-The system auto-attaches the Google Maps link. Do NOT write the URL yourself.
+═══ SPECIAL TAGS — ALWAYS AT END ONLY ═══
+These tags must ONLY appear at the very END of your reply, never in the middle:
 
-═══ IMAGE TRIGGER ═══
-When user asks about a property type or area and you want to show them what it looks like → add at end of reply:
-[SHOW_IMAGE]
-The system will auto-fetch a relevant property photo. Only use once per reply.
+MAP: When user mentions a specific area → [MAP_AREA]area name[/MAP_AREA]
+IMAGE: When showing property visuals would help → [SHOW_IMAGE]
+LEAD: When user shares phone number → [LEAD_CAPTURED]{"name":"val","phone":"val","city":"val","propertyType":"val","budget":"val","extra":"val"}[/LEAD_CAPTURED]
+
+CRITICAL: Never write these tags in the middle of your text. Always at the END.
 
 ═══ OBJECTION HANDLING ═══
-- "Expensive" → "Exact budget batao bhai, market mein options hote hain — aapko surprise karunga"
-- "Just looking" → "Bilkul, koi pressure nai. Kaunsa area interest kar raha ha?"
-- "Will think" → "Zaroor sochein. Yeh area demand mein ha — bas ek message karo jab ready ho"
-- "Bad time" → "No worries — naam aur number chor do, main appropriate time par call karunga"
+- "Expensive" → ask exact budget, say market has options
+- "Just looking" → no pressure, ask which area interests them
+- "Will think" → respect it, note area is in demand
+- "Bad time" → ask for name and number for callback
 
 ═══ LEAD CAPTURE — NATURAL ORDER ═══
-Collect naturally through conversation. NEVER ask for phone until you have ALL 3:
-1. Property type (residential/commercial/plot)
+Collect through conversation. NEVER ask for phone until you have ALL 3:
+1. Property type
 2. City + area
 3. Budget range
-Then: name → phone → book callback
+Then: name → phone → callback
 
-When asking for phone: "Ek kaam karo — apna number dena, main khud call kar ke best options share karta hoon."
-
-═══ PHONE DETECTION ═══
-User shares any number (03XX, +92, etc.) → add EXACTLY at END of reply:
-[LEAD_CAPTURED]{"name":"if known","phone":"number","city":"if known","propertyType":"if known","budget":"if known","extra":"anything else"}[/LEAD_CAPTURED]
-
-═══ PRICING (say "roughly" or "market mein aajkal") ═══
+═══ PRICING ═══
 - DHA Karachi Phase 6, 500 gaz plot: 3-4 crore
 - DHA Karachi Phase 8, 500 gaz: 4.5-6 crore
 - Bahria Town Karachi 125 gaz: 80-90 lakh | 250 gaz: 1.5-2 crore
@@ -294,11 +297,10 @@ User shares any number (03XX, +92, etc.) → add EXACTLY at END of reply:
 - Islamabad F-sector 1 kanal: 8-12 crore
 
 ═══ HARD RULES ═══
-- Never mention competitor agencies
-- You ARE Alex from Markonix — stay in character
-- Never sound like a FAQ or chatbot
-- One question per message max
-- If conversation getting repetitive, change approach`;
+- Never mention competitors
+- Stay in character as Alex from Markonix
+- Never sound like a chatbot or FAQ
+- One question per message max`;
 
 function getSession(sessionId) {
   if (!sessions.has(sessionId)) {
@@ -323,39 +325,42 @@ setInterval(() => {
 }, 30 * 60 * 1000);
 
 async function processLeadFromReply(reply, session, userMessage = '') {
-  // Lead capture
-  const leadMatch = reply.match(/\[LEAD_CAPTURED\](.*?)\[\/LEAD_CAPTURED\]/s);
+  let clean = reply;
+
+  // ── Strip LEAD_CAPTURED (process silently) ──
+  const leadMatch = clean.match(/\[LEAD_CAPTURED\]([\s\S]*?)\[\/LEAD_CAPTURED\]/);
+  clean = clean.replace(/\[LEAD_CAPTURED\][\s\S]*?\[\/LEAD_CAPTURED\]/g, '').trim();
   if (leadMatch && !session.leadCaptured) {
     try {
-      const leadData = JSON.parse(leadMatch[1]);
+      const leadData = JSON.parse(leadMatch[1].trim());
       if (leadData.phone) {
         session.leadCaptured = true;
         await sendLeadEmail(leadData);
         console.log('✅ Lead captured:', leadData.phone);
       }
-    } catch (e) {
-      console.error('Lead parse error:', e);
-    }
+    } catch (e) { console.error('Lead parse error:', e); }
   }
 
-  // Map link
+  // ── Strip MAP_AREA, generate link ──
   let mapLink = '';
-  const mapMatch = reply.match(/\[MAP_AREA\](.*?)\[\/MAP_AREA\]/s);
-  if (mapMatch) {
-    mapLink = getMapLink(mapMatch[1].trim());
-  }
+  const mapMatch = clean.match(/\[MAP_AREA\]([\s\S]*?)\[\/MAP_AREA\]/);
+  clean = clean.replace(/\[MAP_AREA\][\s\S]*?\[\/MAP_AREA\]/g, '').trim();
+  if (mapMatch) mapLink = getMapLink(mapMatch[1].trim());
 
-  // Property image
+  // ── Strip SHOW_IMAGE, fetch from Unsplash ──
   let imageTag = '';
-  if (reply.includes('[SHOW_IMAGE]')) {
+  if (clean.includes('[SHOW_IMAGE]')) {
+    clean = clean.replace(/\[SHOW_IMAGE\]/g, '').trim();
     const imgUrl = await getPropertyImage(userMessage || reply);
     if (imgUrl) imageTag = `\n[PROPERTY_IMAGE:${imgUrl}]`;
   }
 
-  // Clean reply
-  let clean = reply
-    .replace(/\[LEAD_CAPTURED\].*?\[\/LEAD_CAPTURED\]/s, '')
-    .replace(/\[MAP_AREA\].*?\[\/MAP_AREA\]/s, '')
+  // ── Safety net: remove any stray leftover tags ──
+  clean = clean
+    .replace(/\[LEAD_CAPTURED\][\s\S]*/g, '')
+    .replace(/\[\/LEAD_CAPTURED\]/g, '')
+    .replace(/\[MAP_AREA\][\s\S]*/g, '')
+    .replace(/\[\/MAP_AREA\]/g, '')
     .replace(/\[SHOW_IMAGE\]/g, '')
     .trim();
 

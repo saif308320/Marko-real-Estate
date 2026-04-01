@@ -357,10 +357,16 @@ body {
   display: flex;
   gap: 10px;
   margin-bottom: 12px;
+  align-items: flex-end;
 }
 
-.msg-row.user { flex-direction: row-reverse; }
-.msg-row.bot { flex-direction: row; align-items: flex-end; }
+.msg-row.user {
+  flex-direction: row-reverse;
+}
+
+.msg-row.bot {
+  flex-direction: row;
+}
 
 /* ─── AGENT AVATAR ─────────────────────────────── */
 .agent-avatar {
@@ -378,6 +384,7 @@ body {
   font-size: 13px;
   color: var(--gold);
   border: 1px solid var(--border);
+  align-self: flex-end;
 }
 
 .avatar-logo {
@@ -393,9 +400,11 @@ body {
   border-radius: var(--radius);
   font-size: 14px;
   line-height: 1.6;
+  /* FIX: proper word wrapping - no more vertical single characters */
   word-break: break-word;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
+  white-space: normal;
+  min-width: 0;
 }
 
 .bubble.user {
@@ -403,6 +412,9 @@ body {
   color: #111;
   border-bottom-right-radius: 4px;
   font-weight: 500;
+  /* User bubbles: align right, text stays horizontal */
+  display: inline-block;
+  max-width: 72%;
 }
 
 .bubble.bot {
@@ -412,15 +424,33 @@ body {
   border: 1px solid var(--border);
 }
 
+/* FIX: user message wrapper aligns right properly */
+.msg-row.user > div {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  max-width: 80%;
+}
+
+.msg-row.bot > div {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  max-width: 80%;
+  min-width: 0;
+}
+
 .bubble-meta {
   display: block;
   font-size: 11px;
   color: var(--text-dim);
   margin-top: 4px;
   padding: 0 4px;
+  white-space: nowrap;
 }
 
 .msg-row.user .bubble-meta { text-align: right; }
+.msg-row.bot .bubble-meta { text-align: left; }
 
 /* ─── TYPING INDICATOR ─────────────────────────── */
 #typing-indicator {
@@ -500,7 +530,7 @@ body {
 
 #input-row {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   gap: 8px;
   background: var(--surface2);
   border: 1px solid var(--border);
@@ -519,6 +549,7 @@ body {
   transition: color 0.2s;
   flex-shrink: 0;
   align-self: flex-end;
+  margin-bottom: 2px;
 }
 
 .attach-btn:hover { color: var(--gold); }
@@ -528,6 +559,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  min-width: 0;
 }
 
 #image-preview {
@@ -578,8 +610,10 @@ body {
   scrollbar-width: none;
   line-height: 1.5;
   padding: 5px 0;
+  /* FIX: input always LTR and left-aligned */
   text-align: left;
   direction: ltr;
+  unicode-bidi: plaintext;
 }
 
 #user-input::placeholder {
@@ -615,24 +649,66 @@ body {
 }
 
 /* ─── MOBILE RESPONSIVE ────────────────────────── */
-@media (max-width: 480px) {
-  .bubble { max-width: 85%; }
+@media (max-width: 600px) {
+  #app {
+    max-width: 100%;
+    height: 100dvh; /* dynamic viewport height — fixes mobile browser bar */
+  }
 
-  #header { padding: 10px 12px; }
+  .bubble {
+    max-width: 88%;
+    font-size: 13.5px;
+  }
 
-  .header-info h1 { font-size: 15px; }
+  .msg-row.user > div,
+  .msg-row.bot > div {
+    max-width: 92%;
+  }
+
+  #header {
+    padding: 10px 12px;
+  }
+
+  .header-info h1 {
+    font-size: 14px;
+  }
 
   .clear-btn span { display: none; }
   .clear-btn { padding: 7px 10px; }
 
-  #messages { padding: 14px 10px; }
+  #messages {
+    padding: 12px 10px;
+  }
 
-  #input-area { padding: 8px 10px 12px; }
+  #input-area {
+    padding: 8px 10px 12px;
+  }
 
-  .welcome-block { padding: 30px 16px; }
-  .welcome-block h2 { font-size: 17px; }
+  .welcome-block {
+    padding: 28px 16px;
+  }
+
+  .welcome-block h2 {
+    font-size: 17px;
+  }
 
   .loading-line { width: 160px; }
   .structure-box { transform: scale(0.8); }
   .brand-title { font-size: 12px; letter-spacing: 4px; }
+
+  /* Quick replies scroll on mobile */
+  #quick-replies {
+    padding: 4px 10px 10px;
+    gap: 6px;
+  }
+
+  .qbtn {
+    font-size: 11px;
+    padding: 7px 11px;
+  }
+}
+
+@media (max-width: 360px) {
+  .bubble { font-size: 13px; }
+  .header-info h1 { font-size: 13px; }
 }
