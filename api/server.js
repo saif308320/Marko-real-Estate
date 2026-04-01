@@ -86,42 +86,42 @@ async function sendLeadEmail(leadData) {
     <table cellpadding="0" cellspacing="0" style="width:100%;">
       <tr><td style="padding:5px 0;">
         <table cellpadding="0" cellspacing="0"><tr>
-          <td style="width:10px;height:10px;border:2px solid #c29d59;border-radius:50%;"></td>
+          <td style="width:14px;;border:2px solid #c29d59;border-radius:50%;"></td>
           <td style="padding-left:10px;color:#888;font-size:11px;white-space:nowrap;">👤 Name:</td>
           <td style="padding-left:6px;color:#fff;font-size:13px;font-weight:600;">${n}</td>
         </tr></table>
       </td></tr>
       <tr><td style="padding:5px 0;">
         <table cellpadding="0" cellspacing="0"><tr>
-          <td style="width:10px;height:10px;border:2px solid #c29d59;border-radius:50%;"></td>
+          <td style="width:14px;border:2px solid #c29d59;border-radius:50%;"></td>
           <td style="padding-left:10px;color:#888;font-size:11px;white-space:nowrap;">📞 Phone:</td>
           <td style="padding-left:6px;color:#c29d59;font-size:14px;font-weight:800;">${p}</td>
         </tr></table>
       </td></tr>
       <tr><td style="padding:5px 0;">
         <table cellpadding="0" cellspacing="0"><tr>
-          <td style="width:10px;height:10px;border:2px solid #c29d59;border-radius:50%;"></td>
+          <td style="width:14px;border:2px solid #c29d59;border-radius:50%;"></td>
           <td style="padding-left:10px;color:#888;font-size:11px;white-space:nowrap;">📍 City:</td>
           <td style="padding-left:6px;color:#fff;font-size:13px;font-weight:600;">${c}</td>
         </tr></table>
       </td></tr>
       <tr><td style="padding:5px 0;">
         <table cellpadding="0" cellspacing="0"><tr>
-          <td style="width:10px;height:10px;border:2px solid #c29d59;border-radius:50%;"></td>
+          <td style="width:14px;border:2px solid #c29d59;border-radius:50%;"></td>
           <td style="padding-left:10px;color:#888;font-size:11px;white-space:nowrap;">🏠 Type:</td>
           <td style="padding-left:6px;color:#fff;font-size:13px;font-weight:600;">${t}</td>
         </tr></table>
       </td></tr>
       <tr><td style="padding:5px 0;">
         <table cellpadding="0" cellspacing="0"><tr>
-          <td style="width:10px;height:10px;border:2px solid #c29d59;border-radius:50%;"></td>
+          <td style="width:14px;border:2px solid #c29d59;border-radius:50%;"></td>
           <td style="padding-left:10px;color:#888;font-size:11px;white-space:nowrap;">💰 Budget:</td>
           <td style="padding-left:6px;color:#00ff88;font-size:14px;font-weight:800;">${b}</td>
         </tr></table>
       </td></tr>
       <tr><td style="padding:5px 0;">
         <table cellpadding="0" cellspacing="0"><tr>
-          <td style="width:10px;height:10px;border:2px solid #c29d59;border-radius:50%;vertical-align:top;padding-top:3px;"></td>
+          <td style="width:14px;border:2px solid #c29d59;border-radius:50%;vertical-align:top;padding-top:3px;"></td>
           <td style="padding-left:10px;color:#888;font-size:11px;white-space:nowrap;vertical-align:top;">📝 Notes:</td>
           <td style="padding-left:6px;color:#aaa;font-size:12px;line-height:1.5;vertical-align:top;">${e}</td>
         </tr></table>
@@ -132,9 +132,9 @@ async function sendLeadEmail(leadData) {
     ${p !== '—' ? `<div style="margin-top:22px;"><a href="tel:${p}" style="background:#c29d59;color:#000;padding:13px 28px;border-radius:50px;font-size:11px;font-weight:800;text-transform:uppercase;text-decoration:none;letter-spacing:1px;display:inline-block;">Connect With ${n !== '—' ? n : 'Client'}</a></div>` : ''}
 
     <!-- Footer -->
-    <div style="margin-top:24px;padding-top:14px;border-top:1px solid #222;">
+    <div style="margin-top:24px;padding-top:14px;border-top:1px solid #ff0000;">
       <div style="color:#fff;font-size:12px;font-weight:700;">📞 Markonix Real Estate</div>
-      <div style="color:#555;font-size:9px;letter-spacing:1.5px;margin-top:2px;">WWW.MARKONIX.AI</div>
+      <div style="color:#0000ff;font-size:9px;letter-spacing:1.5px;margin-top:2px;">https://marko-real-estate.vercel.app/</div>
       <div style="color:#333;font-size:9px;margin-top:3px;">${time}</div>
     </div>
 
