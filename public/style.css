@@ -395,7 +395,7 @@ body {
 
 /* ─── BUBBLES ───────────────────────────────────── */
 .bubble {
-  max-width: 72%;
+  max-width: 100%;
   padding: 11px 15px;
   border-radius: var(--radius);
   font-size: 14px;
