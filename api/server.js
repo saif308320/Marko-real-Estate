@@ -14,6 +14,9 @@ const GMAIL_PASS = process.env.GMAIL_PASS;
 
 const sessions = new Map();
 
+// Track all captured phone numbers globally (persists across sessions)
+const capturedPhones = new Set();
+
 const storage = multer.memoryStorage();
 const upload = multer({
   storage,
@@ -28,6 +31,7 @@ app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname, '../public')));
 
+// ─── EMAIL ────────────────────────────────────────────
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: { user: GMAIL_USER, pass: GMAIL_PASS }
@@ -35,116 +39,125 @@ const transporter = nodemailer.createTransport({
 
 async function sendLeadEmail(leadData) {
   const { name, phone, city, propertyType, budget, extra } = leadData;
-
-  const clean = (v) => (!v || v === 'val' || v.toLowerCase() === 'unknown' || v.toLowerCase() === 'not provided') ? '—' : v;
+  const clean = (v) => (!v || v === 'val' || v.toLowerCase?.() === 'unknown' || v.toLowerCase?.() === 'not provided') ? '—' : v;
   const n = clean(name);
   const p = clean(phone);
   const c = clean(city);
   const t = clean(propertyType);
   const b = clean(budget);
   const e = clean(extra);
+  const time = new Date().toLocaleString('en-PK', { timeZone: 'Asia/Karachi', dateStyle: 'full', timeStyle: 'short' });
 
-  const time = new Date().toLocaleString('en-PK', {
-    timeZone: 'Asia/Karachi', dateStyle: 'full', timeStyle: 'short'
-  });
-
+  // ── BORCELLE-STYLE EMAIL (same as the HTML you gave) ──
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800&family=Playfair+Display:ital,wght@1,600&display=swap" rel="stylesheet">
+<style>
+  @media only screen and (max-width: 600px) {
+    .canvas-table { width: 100% !important; }
+    .left-panel { width: 100% !important; display: block !important; }
+    .right-image { display: none !important; }
+    .headline { font-size: 36px !important; }
+    .cursive-text { font-size: 22px !important; }
+    .action-btn { padding: 12px 20px !important; font-size: 10px !important; }
+  }
+</style>
 </head>
 <body style="margin:0;padding:30px 16px;background:#f6f6f6;font-family:'Montserrat',Arial,sans-serif;">
 <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
 
-<table cellpadding="0" cellspacing="0" style="width:600px;max-width:600px;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 40px 80px rgba(0,0,0,0.3);">
+<table class="canvas-table" cellpadding="0" cellspacing="0" style="width:600px;max-width:600px;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 40px 80px rgba(0,0,0,0.3);">
 <tr>
 
-  <!-- ── LEFT BLACK PANEL ── -->
-  <td style="width:52%;background:#000000;padding:40px 30px;vertical-align:top;">
+  <!-- LEFT BLACK PANEL -->
+  <td class="left-panel" width="52%" style="background:#000000;padding:40px 30px;vertical-align:top;">
 
-    <!-- Brand -->
-    <table cellpadding="0" cellspacing="0" style="margin-bottom:30px;"><tr>
-      <td style="width:34px;height:34px;border:2.5px solid #c29d59;text-align:center;vertical-align:middle;">
-        <span style="color:#c29d59;font-weight:900;font-size:14px;display:block;">M</span>
+    <!-- Brand header -->
+    <table cellpadding="0" cellspacing="0" style="margin-bottom:28px;"><tr>
+      <td style="width:32px;height:32px;border:2.5px solid #c29d59;text-align:center;vertical-align:middle;">
+        <span style="color:#c29d59;font-weight:900;font-size:13px;display:block;line-height:32px;">M</span>
       </td>
       <td style="padding-left:10px;vertical-align:middle;">
-        <div style="color:#fff;font-weight:800;font-size:13px;letter-spacing:1.5px;">MARKONIX</div>
-        <div style="color:#888;font-size:9px;letter-spacing:3px;">AI LEAD INTELLIGENCE</div>
+        <div style="color:#ffffff;font-weight:800;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;">MARKONIX</div>
+        <div style="color:#888888;font-size:8px;letter-spacing:3px;text-transform:uppercase;">AI LEAD INTELLIGENCE</div>
       </td>
     </tr></table>
 
     <!-- Headline -->
-    <div style="font-size:52px;font-weight:900;color:#fff;line-height:0.85;letter-spacing:-2px;text-transform:uppercase;">LEAD<br>INFO</div>
-    <div style="font-family:'Playfair Display',Georgia,serif;font-style:italic;color:#c29d59;font-size:30px;margin:10px 0 24px 0;">Premium Capture</div>
+    <div class="headline" style="font-size:48px;font-weight:900;color:#ffffff;line-height:0.85;letter-spacing:-2px;text-transform:uppercase;">LEAD<br>INFO</div>
+    <div class="cursive-text" style="font-family:'Playfair Display',Georgia,serif;font-style:italic;color:#c29d59;font-size:28px;margin:10px 0 22px 0;">Premium Capture</div>
 
-    <!-- Pill -->
-    <div style="border:2px solid #c29d59;color:#c29d59;padding:5px 18px;border-radius:50px;font-size:10px;font-weight:800;letter-spacing:3px;display:inline-block;margin-bottom:20px;text-transform:uppercase;">DETAILS:</div>
+    <!-- Pill label -->
+    <div style="border:2px solid #c29d59;color:#c29d59;padding:5px 16px;border-radius:50px;font-size:10px;font-weight:800;letter-spacing:3px;display:inline-block;margin-bottom:20px;text-transform:uppercase;">DETAILS:</div>
 
-    <!-- Rows -->
+    <!-- Lead rows -->
     <table cellpadding="0" cellspacing="0" style="width:100%;">
-      <tr><td style="padding:5px 0;">
+      <tr><td style="padding:6px 0;">
         <table cellpadding="0" cellspacing="0"><tr>
-          <td style="width:14px;;border:2px solid #c29d59;border-radius:50%;"></td>
-          <td style="padding-left:10px;color:#888;font-size:11px;white-space:nowrap;">👤 Name:</td>
-          <td style="padding-left:6px;color:#fff;font-size:13px;font-weight:600;">${n}</td>
+          <td style="width:10px;height:10px;border:2px solid #c29d59;border-radius:50%;flex-shrink:0;"></td>
+          <td style="padding-left:10px;color:#888888;font-size:11px;white-space:nowrap;vertical-align:middle;">👤 Name:</td>
+          <td style="padding-left:8px;color:#ffffff;font-size:13px;font-weight:700;vertical-align:middle;">${n}</td>
         </tr></table>
       </td></tr>
-      <tr><td style="padding:5px 0;">
+      <tr><td style="padding:6px 0;">
         <table cellpadding="0" cellspacing="0"><tr>
-          <td style="width:14px;border:2px solid #c29d59;border-radius:50%;"></td>
-          <td style="padding-left:10px;color:#888;font-size:11px;white-space:nowrap;">📞 Phone:</td>
-          <td style="padding-left:6px;color:#c29d59;font-size:14px;font-weight:800;">${p}</td>
+          <td style="width:10px;height:10px;border:2px solid #c29d59;border-radius:50%;flex-shrink:0;"></td>
+          <td style="padding-left:10px;color:#888888;font-size:11px;white-space:nowrap;vertical-align:middle;">📞 Phone:</td>
+          <td style="padding-left:8px;color:#c29d59;font-size:15px;font-weight:900;vertical-align:middle;">${p}</td>
         </tr></table>
       </td></tr>
-      <tr><td style="padding:5px 0;">
+      <tr><td style="padding:6px 0;">
         <table cellpadding="0" cellspacing="0"><tr>
-          <td style="width:14px;border:2px solid #c29d59;border-radius:50%;"></td>
-          <td style="padding-left:10px;color:#888;font-size:11px;white-space:nowrap;">📍 City:</td>
-          <td style="padding-left:6px;color:#fff;font-size:13px;font-weight:600;">${c}</td>
+          <td style="width:10px;height:10px;border:2px solid #c29d59;border-radius:50%;flex-shrink:0;"></td>
+          <td style="padding-left:10px;color:#888888;font-size:11px;white-space:nowrap;vertical-align:middle;">📍 City:</td>
+          <td style="padding-left:8px;color:#ffffff;font-size:13px;font-weight:600;vertical-align:middle;">${c}</td>
         </tr></table>
       </td></tr>
-      <tr><td style="padding:5px 0;">
+      <tr><td style="padding:6px 0;">
         <table cellpadding="0" cellspacing="0"><tr>
-          <td style="width:14px;border:2px solid #c29d59;border-radius:50%;"></td>
-          <td style="padding-left:10px;color:#888;font-size:11px;white-space:nowrap;">🏠 Type:</td>
-          <td style="padding-left:6px;color:#fff;font-size:13px;font-weight:600;">${t}</td>
+          <td style="width:10px;height:10px;border:2px solid #c29d59;border-radius:50%;flex-shrink:0;"></td>
+          <td style="padding-left:10px;color:#888888;font-size:11px;white-space:nowrap;vertical-align:middle;">🏠 Type:</td>
+          <td style="padding-left:8px;color:#ffffff;font-size:13px;font-weight:600;vertical-align:middle;">${t}</td>
         </tr></table>
       </td></tr>
-      <tr><td style="padding:5px 0;">
+      <tr><td style="padding:6px 0;">
         <table cellpadding="0" cellspacing="0"><tr>
-          <td style="width:14px;border:2px solid #c29d59;border-radius:50%;"></td>
-          <td style="padding-left:10px;color:#888;font-size:11px;white-space:nowrap;">💰 Budget:</td>
-          <td style="padding-left:6px;color:#00ff88;font-size:14px;font-weight:800;">${b}</td>
+          <td style="width:10px;height:10px;border:2px solid #c29d59;border-radius:50%;flex-shrink:0;"></td>
+          <td style="padding-left:10px;color:#888888;font-size:11px;white-space:nowrap;vertical-align:middle;">💰 Budget:</td>
+          <td style="padding-left:8px;color:#00cc66;font-size:14px;font-weight:900;vertical-align:middle;">${b}</td>
         </tr></table>
       </td></tr>
-      <tr><td style="padding:5px 0;">
+      <tr><td style="padding:6px 0;">
         <table cellpadding="0" cellspacing="0"><tr>
-          <td style="width:14px;border:2px solid #c29d59;border-radius:50%;vertical-align:top;padding-top:3px;"></td>
-          <td style="padding-left:10px;color:#888;font-size:11px;white-space:nowrap;vertical-align:top;">📝 Notes:</td>
-          <td style="padding-left:6px;color:#aaa;font-size:12px;line-height:1.5;vertical-align:top;">${e}</td>
+          <td style="width:10px;height:10px;border:2px solid #c29d59;border-radius:50%;flex-shrink:0;vertical-align:top;padding-top:4px;"></td>
+          <td style="padding-left:10px;color:#888888;font-size:11px;white-space:nowrap;vertical-align:top;padding-top:2px;">📝 Notes:</td>
+          <td style="padding-left:8px;color:#aaaaaa;font-size:12px;line-height:1.5;vertical-align:top;">${e}</td>
         </tr></table>
       </td></tr>
     </table>
 
-    <!-- CTA -->
-    ${p !== '—' ? `<div style="margin-top:22px;"><a href="tel:${p}" style="background:#c29d59;color:#000;padding:13px 28px;border-radius:50px;font-size:11px;font-weight:800;text-transform:uppercase;text-decoration:none;letter-spacing:1px;display:inline-block;">Connect With ${n !== '—' ? n : 'Client'}</a></div>` : ''}
+    <!-- CTA Button -->
+    ${p !== '—' ? `<div style="margin-top:24px;">
+      <a href="tel:${p}" class="action-btn" style="background:#c29d59;color:#000000;padding:14px 28px;border-radius:50px;font-size:11px;font-weight:800;text-transform:uppercase;text-decoration:none;letter-spacing:1.5px;display:inline-block;">Connect With ${n !== '—' ? n : 'Client'}</a>
+    </div>` : ''}
 
     <!-- Footer -->
-    <div style="margin-top:24px;padding-top:14px;border-top:1px solid #ff0000;">
-      <div style="color:#fff;font-size:12px;font-weight:700;">📞 Markonix Real Estate</div>
-      <div style="color:#0000ff;font-size:9px;letter-spacing:1.5px;margin-top:2px;">https://marko-real-estate.vercel.app/</div>
-      <div style="color:#333;font-size:9px;margin-top:3px;">${time}</div>
+    <div style="margin-top:26px;padding-top:14px;border-top:1px solid #222222;">
+      <div style="color:#ffffff;font-size:12px;font-weight:700;">📞 Markonix Real Estate</div>
+      <div style="color:#555555;font-size:9px;letter-spacing:1.5px;margin-top:3px;text-transform:uppercase;">marko-real-estate.vercel.app</div>
+      <div style="color:#333333;font-size:9px;margin-top:3px;">${time}</div>
     </div>
 
   </td>
 
-  <!-- ── RIGHT IMAGE ── -->
-  <td style="width:48%;padding:0;vertical-align:top;">
-    <img src="https://marko-real-estate.vercel.app/email-template.jpg"
+  <!-- RIGHT IMAGE PANEL -->
+  <td class="right-image" width="48%" style="padding:0;vertical-align:top;background:#111111;">
+    <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80"
          alt="Markonix Property"
-         style="width:100%;height:100%;min-height:700px;object-fit:cover;display:block;">
+         style="width:100%;height:100%;min-height:600px;object-fit:cover;display:block;">
   </td>
 
 </tr>
@@ -163,63 +176,107 @@ async function sendLeadEmail(leadData) {
 }
 
 // ─── SYSTEM PROMPT ────────────────────────────────────
-const SYSTEM_PROMPT = `You are a friendly, smart property consultant at Markonix Real Estate, Pakistan's premium agency.
+const SYSTEM_PROMPT = `You are a warm, smart property consultant at Markonix Real Estate, Pakistan's premium agency. Your job is to close leads naturally — like a real agent, not a form.
 
-LANGUAGE — FOLLOW STRICTLY:
-- User writes English → reply in English ONLY. Zero Urdu/Hindi words.
-- User writes Roman Urdu → reply in Roman Urdu ONLY. Use: "ha", "tha", "me", "karo", "bhai". NEVER: "hai", "hain", "mein", "kijiye".
-- User writes Urdu script → reply in Urdu script ONLY.
-- Switch immediately when user switches.
+═══ LANGUAGE — NON-NEGOTIABLE ═══
+- User writes English → reply in English ONLY. Zero Urdu/Hindi.
+- User writes Roman Urdu → Roman Urdu ONLY. Pakistani words: "ha", "tha", "me", "karo", "bhai". NEVER Hindi: "hai", "hain", "mein", "kijiye".
+- User writes Urdu script → Urdu script only.
+- Switch immediately when user switches. Never mix.
 
-PERSONALITY:
-- Warm, friendly — like a trusted friend who knows real estate.
-- Hello/hi/salam → greet back very short + ask what they need.
-- Never robotic. Never FAQ style. Never repeat yourself.
-- Max 3-4 sentences. ONE question per message only.
+═══ IDENTITY ═══
+If anyone asks "who made you", "kaun ne banaya", "are you AI", "ChatGPT ho" etc:
+→ Reply simply: "Main ek agent hoon — Markonix ki team ka hissa. Mujhe is kaam ke liye trained kiya gaya ha. Bas property mein help karna mera kaam ha!"
+→ NEVER say Claude, ChatGPT, AI, OpenAI, Anthropic, Groq, or any tech name.
 
-STRICT LEAD QUALIFICATION — FOLLOW THIS ORDER ALWAYS:
-Step 1: Ask property type (residential/commercial/plot) — if not already given
-Step 2: Ask city and area — if not already given  
-Step 3: Ask budget — if not already given
-Step 4: Ask their name — if not already given
-Step 5: ONLY NOW ask for phone number
+═══ PERSONALITY — REAL AGENT STYLE ═══
+- You are a closer. Your job is to understand the client, build trust, then get their details.
+- If someone gives their number immediately without context → do NOT collect it yet. First understand what they need.
+- Be warm and curious. Ask ONE thing at a time.
+- Max 3-4 sentences per message.
+- Never sound like a bot or form. Never repeat yourself.
+- React to what they say — if they say DHA, say something smart about DHA.
 
-GOLDEN RULE: NEVER ask for phone number before completing Steps 1-4.
-GOLDEN RULE: NEVER skip steps. Even if client seems ready, collect info first.
-GOLDEN RULE: Ask ONE thing at a time — never multiple questions together.
+═══ SMART CLOSING — AGENT FLOW ═══
+When client gives phone number before you have their details:
+→ Thank them, then say: "Acha bhai, number mil gaya. Ab batao — kya dhundh rahe ho? Ghar, apartment, ya plot? Aur kaunsa area mind mein ha?"
+→ Collect missing info naturally in conversation AFTER getting the number.
+→ Once you have: property type + city/area + budget (max AND min) + name → fire the LEAD tag.
 
-When client gives phone number → thank them warmly, confirm all their details back, say you will call soon.
+Normal flow (no early number):
+Step 1: Understand property type (residential/commercial/plot)
+Step 2: City and specific area
+Step 3: Budget — ask BOTH max AND minimum: "Kitna budget ha aapka? Aur minimum kitne ka option dekh sakte ho?"
+Step 4: Their name
+Step 5: Phone number — say: "Acha, ek kaam karo — apna number de do, main personally call kar ke best options share karta hoon aapke saath."
 
-OBJECTION HANDLING:
-- "Too expensive" → empathize, ask exact budget, say good options exist
-- "Just looking" → no pressure, ask which area interests them
-- "Will think" → respect it, say area is in demand, offer callback
-- "Bad time" → ask for name and number for later callback
+═══ CALLBACK TIMING — TIME AWARE ═══
+After getting phone, always ask preferred callback time:
+- If current time is 8pm-12am (night): "Raat ka waqt ha — main subah 9-10 baje aap ko call karta hoon, theek rahega?"
+- If current time is 12am-7am (late night/early morning): "Abhi thoda raat ha — main subah tak wait karta hoon aur 9 baje contact karta hoon."
+- If current time is 7am-12pm (morning): "Main 1-2 ghante mein aap ko call karta hoon, okay?"
+- If current time is 12pm-5pm (afternoon): "Aaj shaam tak main personally contact karta hoon."
+- If current time is 5pm-8pm (evening): "Main aaj hi call karta hoon — thodi der mein."
+Use Pakistan Standard Time (UTC+5) to judge current time.
 
-IMAGE REQUESTS:
-- Client asks for property photos → "Main aapko actual property ki photos WhatsApp pe bhejta hoon — real aur latest. Bas apna number share karein"
-- Use as lead capture opportunity
+═══ REAL PROPERTY PRICING — PAKISTAN 2024-2025 ═══
+Karachi:
+- DHA Phase 6: 500 gaz plot 3.5-5 crore | 500 gaz house 6-12 crore
+- DHA Phase 8: 500 gaz plot 4.5-7 crore | house 8-15 crore
+- DHA Phase 2-4: 500 gaz plot 5-9 crore (old DHA, premium)
+- Bahria Town Karachi: 125 gaz house 1.2-1.8 crore | 250 gaz 2-3.5 crore | 500 gaz 4-7 crore
+- Clifton Block 2-4: 2 bed apartment 2-4 crore | 3 bed 4-7 crore
+- Clifton Block 8: 2 bed 1.5-2.5 crore
+- Gulshan-e-Iqbal: 2 bed apartment 1.2-2 crore | 3 bed 2-3 crore
+- North Nazimabad: 2 bed apartment 90 lakh-1.5 crore | 120 gaz house 1.5-2.5 crore
+- PECHS: 120 gaz house 2-3.5 crore | 240 gaz 4-7 crore
+- Scheme 33: 120 gaz house 85 lakh-1.5 crore | 200 gaz 1.8-2.8 crore
+- Malir/Landhi: 80-120 gaz house 40-80 lakh
+- FB Area: 2 bed apartment 80 lakh-1.3 crore
+Lahore:
+- DHA Lahore Phase 6-8: 1 kanal plot 3-5 crore | house 5-10 crore
+- DHA Lahore Phase 1-5: 1 kanal plot 5-9 crore (prime)
+- Bahria Town Lahore: 10 marla house 1.8-2.8 crore | 1 kanal 4-7 crore
+- Gulberg: 1 kanal house 8-20 crore (premium)
+- Model Town: 10 marla 2-4 crore | 1 kanal 5-10 crore
+Islamabad:
+- F-6/F-7: 1 kanal house 15-35 crore (ultra premium)
+- F-10/F-11: 1 kanal house 8-18 crore
+- E-7: 1 kanal 12-25 crore
+- G-13/G-14: 10 marla house 2.5-4.5 crore
+- Bahria Town Islamabad: 10 marla 2-3.5 crore | 1 kanal 4-8 crore
 
-PRICING:
-- DHA Karachi Phase 6, 500 gaz plot: 3-4 crore
-- Bahria Town Karachi 125 gaz: 80-90 lakh
-- Gulshan/Nazimabad 2 bed apartment: 80 lakh - 1.5 crore
-- DHA Lahore 1 kanal: 4-6 crore
-- Islamabad F-sector 1 kanal: 8-12 crore
-- Always say "roughly" or "current market mein"
+MINIMUM PRICE RULE:
+- NEVER say any property available under 50 lakh (except Malir/Landhi plots)
+- Budget under 50 lakh → empathize, suggest Scheme 33, Surjani, FB Area, smaller sizes
 
-LEAD TAG — ADD AT THE VERY END WHEN USER GIVES PHONE:
-[LEAD_CAPTURED]{"name":"REAL NAME OR Not provided","phone":"REAL NUMBER","city":"REAL CITY OR Not provided","propertyType":"REAL TYPE OR Not provided","budget":"REAL BUDGET OR Not provided","extra":"other info or none"}[/LEAD_CAPTURED]
+AREA INTELLIGENCE:
+- DHA Karachi: High demand, 15-20% yearly appreciation, very limited supply
+- Bahria Town KHI: Stable gated community, good long-term investment
+- Gulshan/Nazimabad: High rental yield, apartment demand very consistent
+- Clifton: Ultra prime, NRI/expat demand, limited supply drives prices up
+- DHA Lahore: Most trusted brand, steady capital gains
+- F-sectors Islamabad: Government/diplomat demand, ultra stable
 
-TAG RULES:
-- Only real values — NEVER "val", "unknown", placeholder text
-- Tag at VERY END only — never in middle of message
-- User will NOT see this tag
+═══ OBJECTION HANDLING ═══
+- "Too expensive" → feel their concern, ask exact max+min budget, offer alternatives nearby
+- "Just looking" → no pressure, ask which area caught their eye
+- "Will think" → respect it, drop one smart insight about the area, offer callback
+- "Bad time" → ask for name + number, say you'll call at a better time
 
-HARD RULES:
-- NEVER write "LEAD:", "SHOW_IMAGE", "MAP_AREA" in visible reply
-- NEVER mention competitor agencies
-- NEVER ask phone before getting property type + city + budget + name`;
+═══ LEAD TAG — FIRE WHEN YOU HAVE PHONE ═══
+When you have the phone number — fire this at the VERY END of your reply:
+[LEAD_CAPTURED]{"name":"value","phone":"value","city":"value","propertyType":"value","budget":"max - min range","extra":"any other info"}[/LEAD_CAPTURED]
+
+If some info still missing at time of phone capture → use "Not provided yet" for that field.
+Fire the tag ONCE. Never in the middle of text. Always at very end.
+
+═══ HARD RULES ═══
+- NEVER show raw tags in visible text
+- NEVER mention competitors
+- NEVER sound like a bot or form
+- ONE question per message only
+- NEVER ask budget without asking BOTH max and minimum`;
 
 function getSession(sessionId) {
   if (!sessions.has(sessionId)) {
@@ -231,35 +288,59 @@ function getSession(sessionId) {
       lastActive: Date.now()
     });
   }
-  const session = sessions.get(sessionId);
-  session.lastActive = Date.now();
-  return session;
+  const s = sessions.get(sessionId);
+  s.lastActive = Date.now();
+  return s;
 }
 
 setInterval(() => {
   const now = Date.now();
-  for (const [id, session] of sessions) {
-    if (now - session.lastActive > 2 * 60 * 60 * 1000) sessions.delete(id);
+  for (const [id, s] of sessions) {
+    if (now - s.lastActive > 2 * 60 * 60 * 1000) sessions.delete(id);
   }
 }, 30 * 60 * 1000);
+
+// Normalize phone number for dedup (strip spaces, dashes, +92 → 0)
+function normalizePhone(p) {
+  if (!p) return '';
+  let n = p.replace(/[\s\-\(\)]/g, '');
+  if (n.startsWith('+92')) n = '0' + n.slice(3);
+  if (n.startsWith('92') && n.length === 12) n = '0' + n.slice(2);
+  return n;
+}
 
 async function processReply(reply, session) {
   let clean = reply;
 
+  // ── Extract and strip LEAD_CAPTURED ──
   const leadMatch = clean.match(/\[LEAD_CAPTURED\]([\s\S]*?)\[\/LEAD_CAPTURED\]/);
-  if (leadMatch && !session.leadCaptured) {
+  clean = clean.replace(/\[LEAD_CAPTURED\][\s\S]*?\[\/LEAD_CAPTURED\]/g, '').trim();
+
+  if (leadMatch) {
     try {
       const leadData = JSON.parse(leadMatch[1].trim());
-      if (leadData.phone && leadData.phone !== 'val' && leadData.phone.toLowerCase() !== 'unknown') {
-        session.leadCaptured = true;
-        await sendLeadEmail(leadData);
-        console.log('✅ Lead:', leadData.phone);
+      const phone = normalizePhone(leadData.phone);
+      if (phone && phone !== 'val' && !['unknown','not provided'].includes(phone.toLowerCase())) {
+        if (capturedPhones.has(phone)) {
+          // Duplicate — inject friendly message, no email
+          console.log('📋 Duplicate lead:', phone);
+          const dupMsg = session.history.length > 0 && session.history[0]?.content?.toLowerCase().includes('english')
+            ? "\n\n✅ We already have your number on file! Our consultant will call you shortly. Please wait."
+            : "\n\n✅ Aapka number hamare paas already ha! Hamara consultant jald hi aap ko call kare ga. Please wait karein.";
+          clean = clean + dupMsg;
+        } else {
+          // New lead
+          capturedPhones.add(phone);
+          session.leadCaptured = true;
+          await sendLeadEmail(leadData);
+          console.log('✅ Lead captured:', phone);
+        }
       }
     } catch (e) { console.error('Lead parse error:', e); }
   }
 
+  // ── Safety: strip any leftover tags ──
   clean = clean
-    .replace(/\[LEAD_CAPTURED\][\s\S]*?\[\/LEAD_CAPTURED\]/g, '')
     .replace(/\[\/LEAD_CAPTURED\]/g, '')
     .replace(/\[LEAD_CAPTURED\][\s\S]*/g, '')
     .replace(/\[MAP_AREA\][\s\S]*?\[\/MAP_AREA\]/g, '')
@@ -274,6 +355,7 @@ async function processReply(reply, session) {
   return clean;
 }
 
+// ─── ROUTES ───────────────────────────────────────────
 app.post('/api/chat', async (req, res) => {
   try {
     const { message, sessionId } = req.body;
