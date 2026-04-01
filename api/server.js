@@ -144,7 +144,7 @@ async function sendLeadEmail(leadData) {
   <td style="width:48%;padding:0;vertical-align:top;">
     <img src="https://marko-real-estate.vercel.app/email-template.jpg"
          alt="Markonix Property"
-         style="width:100%;height:100%;min-height:560px;object-fit:cover;display:block;">
+         style="width:100%;height:100%;min-height:700px;object-fit:cover;display:block;">
   </td>
 
 </tr>
