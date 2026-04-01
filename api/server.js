@@ -36,7 +36,7 @@ const transporter = nodemailer.createTransport({
 async function sendLeadEmail(leadData) {
   const { name, phone, city, propertyType, budget, extra } = leadData;
 
-  const clean = (v) => (!v || v === 'val' || v.toLowerCase() === 'unknown' || v.toLowerCase() === 'not provided' || v === '—') ? '—' : v;
+  const clean = (v) => (!v || v === 'val' || v.toLowerCase() === 'unknown' || v.toLowerCase() === 'not provided') ? '—' : v;
   const n = clean(name);
   const p = clean(phone);
   const c = clean(city);
@@ -48,7 +48,6 @@ async function sendLeadEmail(leadData) {
     timeZone: 'Asia/Karachi', dateStyle: 'full', timeStyle: 'short'
   });
 
-  // Exact flyer design from your HTML — converted to email-safe inline styles
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -57,112 +56,101 @@ async function sendLeadEmail(leadData) {
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800&family=Playfair+Display:ital,wght@1,600&display=swap" rel="stylesheet">
 </head>
 <body style="margin:0;padding:30px 16px;background:#f6f6f6;font-family:'Montserrat',Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
 
-<table width="100%" cellpadding="0" cellspacing="0">
-<tr><td align="center">
+<table cellpadding="0" cellspacing="0" style="width:600px;max-width:600px;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 40px 80px rgba(0,0,0,0.3);">
+<tr>
 
-<!-- MAIN CANVAS — 600px wide flyer -->
-<table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;border-radius:12px;overflow:hidden;box-shadow:0 40px 80px rgba(0,0,0,0.3);background:#ffffff;">
-<tr valign="top">
+  <!-- ── LEFT BLACK PANEL ── -->
+  <td style="width:52%;background:#000000;padding:40px 30px;vertical-align:top;">
 
-  <!-- LEFT BLACK PANEL -->
-  <td width="290" valign="top" style="background:#000000;padding:40px 30px;width:290px;">
+    <!-- Brand -->
+    <table cellpadding="0" cellspacing="0" style="margin-bottom:30px;"><tr>
+      <td style="width:34px;height:34px;border:2.5px solid #c29d59;text-align:center;vertical-align:middle;">
+        <span style="color:#c29d59;font-weight:900;font-size:14px;display:block;">M</span>
+      </td>
+      <td style="padding-left:10px;vertical-align:middle;">
+        <div style="color:#fff;font-weight:800;font-size:13px;letter-spacing:1.5px;">MARKONIX</div>
+        <div style="color:#888;font-size:9px;letter-spacing:3px;">AI LEAD INTELLIGENCE</div>
+      </td>
+    </tr></table>
 
-    <!-- Brand Header -->
-    <table cellpadding="0" cellspacing="0" style="margin-bottom:32px;">
-      <tr valign="middle">
-        <td style="width:32px;height:32px;border:2.5px solid #c29d59;text-align:center;vertical-align:middle;transform:rotate(45deg);">
-          <span style="display:block;color:#c29d59;font-weight:900;font-size:13px;transform:rotate(-45deg);">M</span>
-        </td>
-        <td style="padding-left:10px;">
-          <div style="color:#ffffff;font-weight:800;font-size:13px;letter-spacing:1.5px;line-height:1.2;">MARKONIX</div>
-          <div style="color:#888888;font-weight:400;font-size:9px;letter-spacing:3px;">AI LEAD INTELLIGENCE</div>
-        </td>
-      </tr>
+    <!-- Headline -->
+    <div style="font-size:52px;font-weight:900;color:#fff;line-height:0.85;letter-spacing:-2px;text-transform:uppercase;">LEAD<br>INFO</div>
+    <div style="font-family:'Playfair Display',Georgia,serif;font-style:italic;color:#c29d59;font-size:30px;margin:10px 0 24px 0;">Premium Capture</div>
+
+    <!-- Pill -->
+    <div style="border:2px solid #c29d59;color:#c29d59;padding:5px 18px;border-radius:50px;font-size:10px;font-weight:800;letter-spacing:3px;display:inline-block;margin-bottom:20px;text-transform:uppercase;">DETAILS:</div>
+
+    <!-- Rows -->
+    <table cellpadding="0" cellspacing="0" style="width:100%;">
+      <tr><td style="padding:5px 0;">
+        <table cellpadding="0" cellspacing="0"><tr>
+          <td style="width:10px;height:10px;border:2px solid #c29d59;border-radius:50%;"></td>
+          <td style="padding-left:10px;color:#888;font-size:11px;white-space:nowrap;">👤 Name:</td>
+          <td style="padding-left:6px;color:#fff;font-size:13px;font-weight:600;">${n}</td>
+        </tr></table>
+      </td></tr>
+      <tr><td style="padding:5px 0;">
+        <table cellpadding="0" cellspacing="0"><tr>
+          <td style="width:10px;height:10px;border:2px solid #c29d59;border-radius:50%;"></td>
+          <td style="padding-left:10px;color:#888;font-size:11px;white-space:nowrap;">📞 Phone:</td>
+          <td style="padding-left:6px;color:#c29d59;font-size:14px;font-weight:800;">${p}</td>
+        </tr></table>
+      </td></tr>
+      <tr><td style="padding:5px 0;">
+        <table cellpadding="0" cellspacing="0"><tr>
+          <td style="width:10px;height:10px;border:2px solid #c29d59;border-radius:50%;"></td>
+          <td style="padding-left:10px;color:#888;font-size:11px;white-space:nowrap;">📍 City:</td>
+          <td style="padding-left:6px;color:#fff;font-size:13px;font-weight:600;">${c}</td>
+        </tr></table>
+      </td></tr>
+      <tr><td style="padding:5px 0;">
+        <table cellpadding="0" cellspacing="0"><tr>
+          <td style="width:10px;height:10px;border:2px solid #c29d59;border-radius:50%;"></td>
+          <td style="padding-left:10px;color:#888;font-size:11px;white-space:nowrap;">🏠 Type:</td>
+          <td style="padding-left:6px;color:#fff;font-size:13px;font-weight:600;">${t}</td>
+        </tr></table>
+      </td></tr>
+      <tr><td style="padding:5px 0;">
+        <table cellpadding="0" cellspacing="0"><tr>
+          <td style="width:10px;height:10px;border:2px solid #c29d59;border-radius:50%;"></td>
+          <td style="padding-left:10px;color:#888;font-size:11px;white-space:nowrap;">💰 Budget:</td>
+          <td style="padding-left:6px;color:#00ff88;font-size:14px;font-weight:800;">${b}</td>
+        </tr></table>
+      </td></tr>
+      <tr><td style="padding:5px 0;">
+        <table cellpadding="0" cellspacing="0"><tr>
+          <td style="width:10px;height:10px;border:2px solid #c29d59;border-radius:50%;vertical-align:top;padding-top:3px;"></td>
+          <td style="padding-left:10px;color:#888;font-size:11px;white-space:nowrap;vertical-align:top;">📝 Notes:</td>
+          <td style="padding-left:6px;color:#aaa;font-size:12px;line-height:1.5;vertical-align:top;">${e}</td>
+        </tr></table>
+      </td></tr>
     </table>
 
-    <!-- Big Headline -->
-    <div style="font-size:54px;font-weight:900;color:#ffffff;line-height:0.85;letter-spacing:-2px;text-transform:uppercase;margin-bottom:8px;">LEAD<br>INFO</div>
-
-    <!-- Italic Subheading -->
-    <div style="font-family:'Playfair Display',Georgia,serif;font-style:italic;color:#c29d59;font-size:34px;margin-bottom:26px;">Premium Capture</div>
-
-    <!-- Gold pill label -->
-    <div style="display:inline-block;border:2px solid #c29d59;color:#c29d59;padding:5px 20px;border-radius:50px;font-size:10px;font-weight:800;letter-spacing:3px;text-transform:uppercase;margin-bottom:22px;">DETAILS:</div>
-
-    <!-- Lead Info Rows -->
-    <table cellpadding="0" cellspacing="4" style="width:100%;">
-      <tr>
-        <td style="padding:5px 0;vertical-align:middle;">
-          <span style="display:inline-block;width:8px;height:8px;border:2px solid #c29d59;border-radius:50%;margin-right:10px;vertical-align:middle;"></span>
-          <span style="color:#888;font-size:11px;vertical-align:middle;">👤 Name:</span>
-          <span style="color:#ffffff;font-size:13px;font-weight:600;margin-left:6px;vertical-align:middle;">${n}</span>
-        </td>
-      </tr>
-      <tr>
-        <td style="padding:5px 0;vertical-align:middle;">
-          <span style="display:inline-block;width:8px;height:8px;border:2px solid #c29d59;border-radius:50%;margin-right:10px;vertical-align:middle;"></span>
-          <span style="color:#888;font-size:11px;vertical-align:middle;">📞 Phone:</span>
-          <span style="color:#c29d59;font-size:14px;font-weight:800;margin-left:6px;vertical-align:middle;">${p}</span>
-        </td>
-      </tr>
-      <tr>
-        <td style="padding:5px 0;vertical-align:middle;">
-          <span style="display:inline-block;width:8px;height:8px;border:2px solid #c29d59;border-radius:50%;margin-right:10px;vertical-align:middle;"></span>
-          <span style="color:#888;font-size:11px;vertical-align:middle;">📍 City:</span>
-          <span style="color:#ffffff;font-size:13px;font-weight:600;margin-left:6px;vertical-align:middle;">${c}</span>
-        </td>
-      </tr>
-      <tr>
-        <td style="padding:5px 0;vertical-align:middle;">
-          <span style="display:inline-block;width:8px;height:8px;border:2px solid #c29d59;border-radius:50%;margin-right:10px;vertical-align:middle;"></span>
-          <span style="color:#888;font-size:11px;vertical-align:middle;">🏠 Type:</span>
-          <span style="color:#ffffff;font-size:13px;font-weight:600;margin-left:6px;vertical-align:middle;">${t}</span>
-        </td>
-      </tr>
-      <tr>
-        <td style="padding:5px 0;vertical-align:middle;">
-          <span style="display:inline-block;width:8px;height:8px;border:2px solid #c29d59;border-radius:50%;margin-right:10px;vertical-align:middle;"></span>
-          <span style="color:#888;font-size:11px;vertical-align:middle;">💰 Budget:</span>
-          <span style="color:#00ff88;font-size:14px;font-weight:800;margin-left:6px;vertical-align:middle;">${b}</span>
-        </td>
-      </tr>
-      <tr>
-        <td style="padding:5px 0;vertical-align:top;">
-          <span style="display:inline-block;width:8px;height:8px;border:2px solid #c29d59;border-radius:50%;margin-right:10px;vertical-align:top;margin-top:4px;"></span>
-          <span style="color:#888;font-size:11px;vertical-align:top;">📝 Notes:</span>
-          <span style="color:#aaaaaa;font-size:12px;font-weight:400;margin-left:6px;vertical-align:top;line-height:1.5;">${e}</span>
-        </td>
-      </tr>
-    </table>
-
-    <!-- CTA Button -->
-    ${p !== '—' ? `<div style="margin-top:22px;"><a href="tel:${p}" style="display:inline-block;background:#c29d59;color:#000000;padding:14px 30px;border-radius:50px;font-size:11px;font-weight:800;text-transform:uppercase;text-decoration:none;letter-spacing:1px;">Connect With ${n !== '—' ? n : 'Client'}</a></div>` : ''}
+    <!-- CTA -->
+    ${p !== '—' ? `<div style="margin-top:22px;"><a href="tel:${p}" style="background:#c29d59;color:#000;padding:13px 28px;border-radius:50px;font-size:11px;font-weight:800;text-transform:uppercase;text-decoration:none;letter-spacing:1px;display:inline-block;">Connect With ${n !== '—' ? n : 'Client'}</a></div>` : ''}
 
     <!-- Footer -->
-    <div style="margin-top:26px;padding-top:14px;border-top:1px solid #222222;">
-      <div style="color:#ffffff;font-weight:700;font-size:12px;">📞 +92 316 353 3206</div>
-      <div style="color:#555555;font-size:9px;letter-spacing:1.5px;margin-top:3px;">WWW.MARKONIX.AI</div>
-      <div style="color:#333333;font-size:9px;margin-top:4px;">${time}</div>
+    <div style="margin-top:24px;padding-top:14px;border-top:1px solid #222;">
+      <div style="color:#fff;font-size:12px;font-weight:700;">📞 Markonix Real Estate</div>
+      <div style="color:#555;font-size:9px;letter-spacing:1.5px;margin-top:2px;">WWW.MARKONIX.AI</div>
+      <div style="color:#333;font-size:9px;margin-top:3px;">${time}</div>
     </div>
 
   </td>
 
-  <!-- RIGHT IMAGE PANEL -->
-  <td width="310" valign="top" style="padding:0;width:310px;overflow:hidden;">
+  <!-- ── RIGHT IMAGE ── -->
+  <td style="width:48%;padding:0;vertical-align:top;">
     <img src="https://marko-real-estate.vercel.app/email-template.jpg"
          alt="Markonix Property"
-         width="310"
-         style="width:310px;height:100%;min-height:520px;object-fit:cover;display:block;vertical-align:top;">
+         style="width:100%;height:100%;min-height:560px;object-fit:cover;display:block;">
   </td>
 
 </tr>
 </table>
-<!-- END CANVAS -->
 
-</td></tr>
-</table>
-
+</td></tr></table>
 </body>
 </html>`;
 
@@ -178,61 +166,60 @@ async function sendLeadEmail(leadData) {
 const SYSTEM_PROMPT = `You are a friendly, smart property consultant at Markonix Real Estate, Pakistan's premium agency.
 
 LANGUAGE — FOLLOW STRICTLY:
-- User writes English → reply in English ONLY. No Urdu words at all.
-- User writes Roman Urdu → reply in Roman Urdu ONLY. Pakistani words: "ha", "tha", "me", "karo", "bhai". NEVER Hindi: "hai", "hain", "mein", "kijiye".
+- User writes English → reply in English ONLY. Zero Urdu/Hindi words.
+- User writes Roman Urdu → reply in Roman Urdu ONLY. Use: "ha", "tha", "me", "karo", "bhai". NEVER: "hai", "hain", "mein", "kijiye".
 - User writes Urdu script → reply in Urdu script ONLY.
-- If user switches language → you switch too immediately.
+- Switch immediately when user switches.
 
 PERSONALITY:
-- Warm, friendly, helpful — like a trusted friend who knows real estate well.
-- When user says hello/hi/salam → greet back warmly + ask what they're looking for. Keep it very short.
-- Never sound robotic or like a FAQ page.
-- Never repeat yourself.
-- Max 3-4 sentences per reply unless user asks for details.
-- ONE question per message only.
+- Warm, friendly — like a trusted friend who knows real estate.
+- Hello/hi/salam → greet back very short + ask what they need.
+- Never robotic. Never FAQ style. Never repeat yourself.
+- Max 3-4 sentences. ONE question per message only.
 
-CONVERSATION FLOW — COLLECT IN THIS ORDER:
-1. Property type (residential/commercial/plot)
-2. City and area
-3. Budget
-4. Name
-5. Phone number
+STRICT LEAD QUALIFICATION — FOLLOW THIS ORDER ALWAYS:
+Step 1: Ask property type (residential/commercial/plot) — if not already given
+Step 2: Ask city and area — if not already given  
+Step 3: Ask budget — if not already given
+Step 4: Ask their name — if not already given
+Step 5: ONLY NOW ask for phone number
 
-CRITICAL LEAD RULE:
-- NEVER ask for phone number until you have ALL 3: property type + city + budget
-- When user gives phone number → thank them warmly, confirm their details, say you will call soon
+GOLDEN RULE: NEVER ask for phone number before completing Steps 1-4.
+GOLDEN RULE: NEVER skip steps. Even if client seems ready, collect info first.
+GOLDEN RULE: Ask ONE thing at a time — never multiple questions together.
 
-IMAGE REQUESTS:
-- If client asks for property photos → say "Main aapko actual property ki photos WhatsApp pe bhejta hoon — bilkul real aur latest. Bas apna number share karein"
+When client gives phone number → thank them warmly, confirm all their details back, say you will call soon.
 
 OBJECTION HANDLING:
-- "Too expensive" → empathize, ask exact budget, say there are good options
+- "Too expensive" → empathize, ask exact budget, say good options exist
 - "Just looking" → no pressure, ask which area interests them
-- "Will think" → respect it, mention area is in demand, offer callback
-- "Bad time" → ask for name and number for callback
+- "Will think" → respect it, say area is in demand, offer callback
+- "Bad time" → ask for name and number for later callback
+
+IMAGE REQUESTS:
+- Client asks for property photos → "Main aapko actual property ki photos WhatsApp pe bhejta hoon — real aur latest. Bas apna number share karein"
+- Use as lead capture opportunity
 
 PRICING:
 - DHA Karachi Phase 6, 500 gaz plot: 3-4 crore
 - Bahria Town Karachi 125 gaz: 80-90 lakh
-- Gulshan/Nazimabad 2bed apartment: 80 lakh - 1.5 crore
+- Gulshan/Nazimabad 2 bed apartment: 80 lakh - 1.5 crore
 - DHA Lahore 1 kanal: 4-6 crore
 - Islamabad F-sector 1 kanal: 8-12 crore
 - Always say "roughly" or "current market mein"
 
-LEAD CAPTURE TAG — VERY IMPORTANT:
-- When user shares a real phone number, add this EXACTLY at the very END of your reply:
-[LEAD_CAPTURED]{"name":"ACTUAL NAME OR Not provided","phone":"ACTUAL NUMBER","city":"ACTUAL CITY OR Not provided","propertyType":"ACTUAL TYPE OR Not provided","budget":"ACTUAL BUDGET OR Not provided","extra":"any other details or none"}[/LEAD_CAPTURED]
+LEAD TAG — ADD AT THE VERY END WHEN USER GIVES PHONE:
+[LEAD_CAPTURED]{"name":"REAL NAME OR Not provided","phone":"REAL NUMBER","city":"REAL CITY OR Not provided","propertyType":"REAL TYPE OR Not provided","budget":"REAL BUDGET OR Not provided","extra":"other info or none"}[/LEAD_CAPTURED]
 
-RULES:
-- Use real values the user told you. If unknown write "Not provided"
-- NEVER write "val", "unknown", or placeholder text
-- Tag must be at the VERY END only
+TAG RULES:
+- Only real values — NEVER "val", "unknown", placeholder text
+- Tag at VERY END only — never in middle of message
 - User will NOT see this tag
 
 HARD RULES:
-- NEVER write "LEAD:", "SHOW_IMAGE", "MAP_AREA" in your visible reply
-- NEVER put tags in the middle of your message
-- NEVER mention competitor agencies`;
+- NEVER write "LEAD:", "SHOW_IMAGE", "MAP_AREA" in visible reply
+- NEVER mention competitor agencies
+- NEVER ask phone before getting property type + city + budget + name`;
 
 function getSession(sessionId) {
   if (!sessions.has(sessionId)) {
@@ -266,7 +253,7 @@ async function processReply(reply, session) {
       if (leadData.phone && leadData.phone !== 'val' && leadData.phone.toLowerCase() !== 'unknown') {
         session.leadCaptured = true;
         await sendLeadEmail(leadData);
-        console.log('✅ Lead captured:', leadData.phone);
+        console.log('✅ Lead:', leadData.phone);
       }
     } catch (e) { console.error('Lead parse error:', e); }
   }
@@ -344,8 +331,8 @@ async function callGroq(history) {
     body: JSON.stringify({
       model: 'llama-3.3-70b-versatile',
       messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...history.slice(-20)],
-      temperature: 0.75,
-      max_tokens: 500
+      temperature: 0.7,
+      max_tokens: 450
     })
   });
   if (!response.ok) { const err = await response.json(); throw new Error(err.error?.message || 'Groq error'); }
@@ -360,8 +347,8 @@ async function callGroqVision(messages) {
     body: JSON.stringify({
       model: 'meta-llama/llama-4-scout-17b-16e-instruct',
       messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...messages.slice(-10)],
-      temperature: 0.75,
-      max_tokens: 600
+      temperature: 0.7,
+      max_tokens: 550
     })
   });
   if (!response.ok) { const err = await response.json(); throw new Error(err.error?.message || 'Groq Vision error'); }
@@ -370,7 +357,7 @@ async function callGroqVision(messages) {
 }
 
 app.listen(PORT, () => {
-  console.log(`✅ Markonix server → http://localhost:${PORT}`);
+  console.log(`✅ Markonix → http://localhost:${PORT}`);
   if (!GROQ_API_KEY) console.warn('⚠️  GROQ_API_KEY missing');
   if (!GMAIL_USER) console.warn('⚠️  GMAIL_USER missing');
   if (!GMAIL_PASS) console.warn('⚠️  GMAIL_PASS missing');
