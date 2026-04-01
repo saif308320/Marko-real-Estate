@@ -28,7 +28,6 @@ app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname, '../public')));
 
-// ─── EMAIL ────────────────────────────────────────────
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: { user: GMAIL_USER, pass: GMAIL_PASS }
@@ -36,153 +35,141 @@ const transporter = nodemailer.createTransport({
 
 async function sendLeadEmail(leadData) {
   const { name, phone, city, propertyType, budget, extra } = leadData;
+
+  const clean = (v) => (!v || v === 'val' || v.toLowerCase() === 'unknown' || v.toLowerCase() === 'not provided' || v === '—') ? '—' : v;
+  const n = clean(name);
+  const p = clean(phone);
+  const c = clean(city);
+  const t = clean(propertyType);
+  const b = clean(budget);
+  const e = clean(extra);
+
   const time = new Date().toLocaleString('en-PK', {
     timeZone: 'Asia/Karachi', dateStyle: 'full', timeStyle: 'short'
   });
 
-  // Clean values — never show "val" or "unknown"
-  const cleanName = (!name || name === 'val' || name === 'unknown' || name === 'Unknown') ? 'Not provided' : name;
-  const cleanPhone = (!phone || phone === 'val' || phone === 'unknown') ? 'Not provided' : phone;
-  const cleanCity = (!city || city === 'val' || city === 'unknown' || city === 'Unknown') ? 'Not provided' : city;
-  const cleanType = (!propertyType || propertyType === 'val' || propertyType === 'unknown' || propertyType === 'Unknown') ? 'Not provided' : propertyType;
-  const cleanBudget = (!budget || budget === 'val' || budget === 'unknown' || budget === 'Unknown') ? 'Not provided' : budget;
-  const cleanExtra = (!extra || extra === 'val' || extra === 'none' || extra === 'None') ? '—' : extra;
-
+  // Exact flyer design from your HTML — converted to email-safe inline styles
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800&family=Playfair+Display:ital,wght@1,600&display=swap" rel="stylesheet">
 </head>
-<body style="margin:0;padding:0;background:#0a0a0a;font-family:'Segoe UI',Arial,sans-serif;">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0a;padding:30px 16px;">
+<body style="margin:0;padding:30px 16px;background:#f6f6f6;font-family:'Montserrat',Arial,sans-serif;">
+
+<table width="100%" cellpadding="0" cellspacing="0">
 <tr><td align="center">
-<table width="580" cellpadding="0" cellspacing="0" style="max-width:580px;width:100%;border-radius:16px;overflow:hidden;border:1px solid #2a2a2a;">
 
-  <!-- TOP IMAGE BANNER -->
-  <tr>
-    <td style="padding:0;position:relative;">
-      <img src="https://marko-real-estate.vercel.app/email-template.jpg" alt="Markonix Real Estate" width="580" style="width:100%;max-width:580px;height:200px;object-fit:cover;display:block;">
-      <div style="position:absolute;inset:0;background:linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.85) 100%);"></div>
-      <div style="position:absolute;bottom:20px;left:24px;">
-        <p style="margin:0;color:#c9a84c;font-size:10px;letter-spacing:3px;text-transform:uppercase;font-weight:700;">Markonix Real Estate</p>
-        <h1 style="margin:4px 0 0;color:#ffffff;font-size:28px;font-weight:900;text-transform:uppercase;letter-spacing:1px;">New Lead 🔥</h1>
-      </div>
-    </td>
-  </tr>
+<!-- MAIN CANVAS — 600px wide flyer -->
+<table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;border-radius:12px;overflow:hidden;box-shadow:0 40px 80px rgba(0,0,0,0.3);background:#ffffff;">
+<tr valign="top">
 
-  <!-- ALERT BAR -->
-  <tr>
-    <td style="background:#c9a84c;padding:10px 24px;text-align:center;">
-      <p style="margin:0;color:#0a0a0a;font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase;">⚡ Immediate Follow-Up Required</p>
-    </td>
-  </tr>
+  <!-- LEFT BLACK PANEL -->
+  <td width="290" valign="top" style="background:#000000;padding:40px 30px;width:290px;">
 
-  <!-- LEAD DETAILS -->
-  <tr>
-    <td style="background:#111111;padding:28px 24px;">
+    <!-- Brand Header -->
+    <table cellpadding="0" cellspacing="0" style="margin-bottom:32px;">
+      <tr valign="middle">
+        <td style="width:32px;height:32px;border:2.5px solid #c29d59;text-align:center;vertical-align:middle;transform:rotate(45deg);">
+          <span style="display:block;color:#c29d59;font-weight:900;font-size:13px;transform:rotate(-45deg);">M</span>
+        </td>
+        <td style="padding-left:10px;">
+          <div style="color:#ffffff;font-weight:800;font-size:13px;letter-spacing:1.5px;line-height:1.2;">MARKONIX</div>
+          <div style="color:#888888;font-weight:400;font-size:9px;letter-spacing:3px;">AI LEAD INTELLIGENCE</div>
+        </td>
+      </tr>
+    </table>
 
-      <p style="margin:0 0 18px;color:#444;font-size:10px;letter-spacing:2px;text-transform:uppercase;border-bottom:1px solid #1e1e1e;padding-bottom:12px;">Lead Information</p>
+    <!-- Big Headline -->
+    <div style="font-size:54px;font-weight:900;color:#ffffff;line-height:0.85;letter-spacing:-2px;text-transform:uppercase;margin-bottom:8px;">LEAD<br>INFO</div>
 
-      <!-- Name -->
-      <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:1px;">
-        <tr style="border-bottom:1px solid #1a1a1a;">
-          <td style="padding:12px 0;width:36px;vertical-align:middle;font-size:16px;">👤</td>
-          <td style="padding:12px 8px;color:#666;font-size:12px;vertical-align:middle;">Full Name</td>
-          <td style="padding:12px 0;text-align:right;vertical-align:middle;">
-            <span style="color:#ffffff;font-size:15px;font-weight:700;">${cleanName}</span>
-          </td>
-        </tr>
-      </table>
+    <!-- Italic Subheading -->
+    <div style="font-family:'Playfair Display',Georgia,serif;font-style:italic;color:#c29d59;font-size:34px;margin-bottom:26px;">Premium Capture</div>
 
-      <!-- Phone -->
-      <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:1px;">
-        <tr style="border-bottom:1px solid #1a1a1a;">
-          <td style="padding:12px 0;width:36px;vertical-align:middle;font-size:16px;">📞</td>
-          <td style="padding:12px 8px;color:#666;font-size:12px;vertical-align:middle;">Phone Number</td>
-          <td style="padding:12px 0;text-align:right;vertical-align:middle;">
-            <span style="color:#c9a84c;font-size:20px;font-weight:900;">${cleanPhone}</span>
-          </td>
-        </tr>
-      </table>
+    <!-- Gold pill label -->
+    <div style="display:inline-block;border:2px solid #c29d59;color:#c29d59;padding:5px 20px;border-radius:50px;font-size:10px;font-weight:800;letter-spacing:3px;text-transform:uppercase;margin-bottom:22px;">DETAILS:</div>
 
-      <!-- City -->
-      <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:1px;">
-        <tr style="border-bottom:1px solid #1a1a1a;">
-          <td style="padding:12px 0;width:36px;vertical-align:middle;font-size:16px;">📍</td>
-          <td style="padding:12px 8px;color:#666;font-size:12px;vertical-align:middle;">City / Area</td>
-          <td style="padding:12px 0;text-align:right;vertical-align:middle;">
-            <span style="color:#ffffff;font-size:14px;font-weight:600;">${cleanCity}</span>
-          </td>
-        </tr>
-      </table>
+    <!-- Lead Info Rows -->
+    <table cellpadding="0" cellspacing="4" style="width:100%;">
+      <tr>
+        <td style="padding:5px 0;vertical-align:middle;">
+          <span style="display:inline-block;width:8px;height:8px;border:2px solid #c29d59;border-radius:50%;margin-right:10px;vertical-align:middle;"></span>
+          <span style="color:#888;font-size:11px;vertical-align:middle;">👤 Name:</span>
+          <span style="color:#ffffff;font-size:13px;font-weight:600;margin-left:6px;vertical-align:middle;">${n}</span>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:5px 0;vertical-align:middle;">
+          <span style="display:inline-block;width:8px;height:8px;border:2px solid #c29d59;border-radius:50%;margin-right:10px;vertical-align:middle;"></span>
+          <span style="color:#888;font-size:11px;vertical-align:middle;">📞 Phone:</span>
+          <span style="color:#c29d59;font-size:14px;font-weight:800;margin-left:6px;vertical-align:middle;">${p}</span>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:5px 0;vertical-align:middle;">
+          <span style="display:inline-block;width:8px;height:8px;border:2px solid #c29d59;border-radius:50%;margin-right:10px;vertical-align:middle;"></span>
+          <span style="color:#888;font-size:11px;vertical-align:middle;">📍 City:</span>
+          <span style="color:#ffffff;font-size:13px;font-weight:600;margin-left:6px;vertical-align:middle;">${c}</span>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:5px 0;vertical-align:middle;">
+          <span style="display:inline-block;width:8px;height:8px;border:2px solid #c29d59;border-radius:50%;margin-right:10px;vertical-align:middle;"></span>
+          <span style="color:#888;font-size:11px;vertical-align:middle;">🏠 Type:</span>
+          <span style="color:#ffffff;font-size:13px;font-weight:600;margin-left:6px;vertical-align:middle;">${t}</span>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:5px 0;vertical-align:middle;">
+          <span style="display:inline-block;width:8px;height:8px;border:2px solid #c29d59;border-radius:50%;margin-right:10px;vertical-align:middle;"></span>
+          <span style="color:#888;font-size:11px;vertical-align:middle;">💰 Budget:</span>
+          <span style="color:#00ff88;font-size:14px;font-weight:800;margin-left:6px;vertical-align:middle;">${b}</span>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:5px 0;vertical-align:top;">
+          <span style="display:inline-block;width:8px;height:8px;border:2px solid #c29d59;border-radius:50%;margin-right:10px;vertical-align:top;margin-top:4px;"></span>
+          <span style="color:#888;font-size:11px;vertical-align:top;">📝 Notes:</span>
+          <span style="color:#aaaaaa;font-size:12px;font-weight:400;margin-left:6px;vertical-align:top;line-height:1.5;">${e}</span>
+        </td>
+      </tr>
+    </table>
 
-      <!-- Property Type -->
-      <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:1px;">
-        <tr style="border-bottom:1px solid #1a1a1a;">
-          <td style="padding:12px 0;width:36px;vertical-align:middle;font-size:16px;">🏠</td>
-          <td style="padding:12px 8px;color:#666;font-size:12px;vertical-align:middle;">Property Type</td>
-          <td style="padding:12px 0;text-align:right;vertical-align:middle;">
-            <span style="color:#ffffff;font-size:14px;font-weight:600;">${cleanType}</span>
-          </td>
-        </tr>
-      </table>
+    <!-- CTA Button -->
+    ${p !== '—' ? `<div style="margin-top:22px;"><a href="tel:${p}" style="display:inline-block;background:#c29d59;color:#000000;padding:14px 30px;border-radius:50px;font-size:11px;font-weight:800;text-transform:uppercase;text-decoration:none;letter-spacing:1px;">Connect With ${n !== '—' ? n : 'Client'}</a></div>` : ''}
 
-      <!-- Budget -->
-      <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:1px;">
-        <tr style="border-bottom:1px solid #1a1a1a;">
-          <td style="padding:12px 0;width:36px;vertical-align:middle;font-size:16px;">💰</td>
-          <td style="padding:12px 8px;color:#666;font-size:12px;vertical-align:middle;">Budget</td>
-          <td style="padding:12px 0;text-align:right;vertical-align:middle;">
-            <span style="color:#4ade80;font-size:17px;font-weight:800;">${cleanBudget}</span>
-          </td>
-        </tr>
-      </table>
+    <!-- Footer -->
+    <div style="margin-top:26px;padding-top:14px;border-top:1px solid #222222;">
+      <div style="color:#ffffff;font-weight:700;font-size:12px;">📞 +92 316 353 3206</div>
+      <div style="color:#555555;font-size:9px;letter-spacing:1.5px;margin-top:3px;">WWW.MARKONIX.AI</div>
+      <div style="color:#333333;font-size:9px;margin-top:4px;">${time}</div>
+    </div>
 
-      <!-- Notes -->
-      <table width="100%" cellpadding="0" cellspacing="0">
-        <tr>
-          <td style="padding:12px 0;width:36px;vertical-align:top;font-size:16px;">📝</td>
-          <td style="padding:12px 8px;color:#666;font-size:12px;vertical-align:top;">Notes</td>
-          <td style="padding:12px 0;text-align:right;vertical-align:top;">
-            <span style="color:#888;font-size:13px;line-height:1.5;">${cleanExtra}</span>
-          </td>
-        </tr>
-      </table>
+  </td>
 
-      <!-- CTA Button -->
-      ${cleanPhone !== 'Not provided' ? `
-      <div style="margin-top:24px;text-align:center;">
-        <a href="tel:${cleanPhone}" style="display:inline-block;background:linear-gradient(135deg,#c9a84c,#e8c96a);color:#0a0a0a;padding:14px 40px;border-radius:8px;font-size:13px;font-weight:800;text-decoration:none;letter-spacing:1px;text-transform:uppercase;">📞 Call Now — ${cleanPhone}</a>
-      </div>` : ''}
+  <!-- RIGHT IMAGE PANEL -->
+  <td width="310" valign="top" style="padding:0;width:310px;overflow:hidden;">
+    <img src="https://marko-real-estate.vercel.app/email-template.jpg"
+         alt="Markonix Property"
+         width="310"
+         style="width:310px;height:100%;min-height:520px;object-fit:cover;display:block;vertical-align:top;">
+  </td>
 
-      <!-- Pro Tip -->
-      <div style="margin-top:20px;padding:14px 16px;background:#0d0d0d;border-left:3px solid #c9a84c;border-radius:0 6px 6px 0;">
-        <p style="margin:0 0 4px;color:#c9a84c;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">⚡ Pro Tip</p>
-        <p style="margin:0;color:#555;font-size:12px;line-height:1.6;">Leads contacted within 5 minutes convert 9× more. Call now!</p>
-      </div>
-
-    </td>
-  </tr>
-
-  <!-- FOOTER -->
-  <tr>
-    <td style="background:#0a0a0a;padding:16px 24px;text-align:center;border-top:1px solid #1a1a1a;">
-      <p style="margin:0;color:#c9a84c;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;">MARKONIX REAL ESTATE</p>
-      <p style="margin:5px 0 0;color:#333;font-size:10px;">${time} &nbsp;·&nbsp; AI Lead System</p>
-    </td>
-  </tr>
-
+</tr>
 </table>
+<!-- END CANVAS -->
+
 </td></tr>
 </table>
+
 </body>
 </html>`;
 
   await transporter.sendMail({
     from: `"Markonix Bot 🏠" <${GMAIL_USER}>`,
     to: GMAIL_USER,
-    subject: `🔥 New Lead: ${cleanName} | ${cleanPhone} | ${cleanCity} | ${cleanType}`,
+    subject: `🔥 New Lead: ${n} | ${p} | ${c} | ${t}`,
     html
   });
 }
@@ -217,11 +204,10 @@ CRITICAL LEAD RULE:
 
 IMAGE REQUESTS:
 - If client asks for property photos → say "Main aapko actual property ki photos WhatsApp pe bhejta hoon — bilkul real aur latest. Bas apna number share karein"
-- Use image request as lead capture opportunity
 
 OBJECTION HANDLING:
 - "Too expensive" → empathize, ask exact budget, say there are good options
-- "Just looking" → no pressure, ask which area interests them  
+- "Just looking" → no pressure, ask which area interests them
 - "Will think" → respect it, mention area is in demand, offer callback
 - "Bad time" → ask for name and number for callback
 
@@ -234,15 +220,13 @@ PRICING:
 - Always say "roughly" or "current market mein"
 
 LEAD CAPTURE TAG — VERY IMPORTANT:
-- When user shares a real phone number, add this EXACTLY at the very END of your reply (after all your text):
-[LEAD_CAPTURED]{"name":"ACTUAL_NAME_OR_NOT_PROVIDED","phone":"ACTUAL_NUMBER","city":"ACTUAL_CITY_OR_NOT_PROVIDED","propertyType":"ACTUAL_TYPE_OR_Not_provided","budget":"ACTUAL_BUDGET_OR_Not_provided","extra":"any other details"}[/LEAD_CAPTURED]
+- When user shares a real phone number, add this EXACTLY at the very END of your reply:
+[LEAD_CAPTURED]{"name":"ACTUAL NAME OR Not provided","phone":"ACTUAL NUMBER","city":"ACTUAL CITY OR Not provided","propertyType":"ACTUAL TYPE OR Not provided","budget":"ACTUAL BUDGET OR Not provided","extra":"any other details or none"}[/LEAD_CAPTURED]
 
-RULES FOR TAG:
-- Replace ACTUAL_NAME with the real name user told you. If unknown write "Not provided"
-- Replace ACTUAL_NUMBER with the real phone number
-- Replace ACTUAL_CITY with real city. If unknown write "Not provided"  
-- NEVER write "val", "unknown", or placeholder text in the JSON
-- Tag must be at the VERY END only, never in the middle
+RULES:
+- Use real values the user told you. If unknown write "Not provided"
+- NEVER write "val", "unknown", or placeholder text
+- Tag must be at the VERY END only
 - User will NOT see this tag
 
 HARD RULES:
@@ -275,12 +259,11 @@ setInterval(() => {
 async function processReply(reply, session) {
   let clean = reply;
 
-  // Extract LEAD_CAPTURED
   const leadMatch = clean.match(/\[LEAD_CAPTURED\]([\s\S]*?)\[\/LEAD_CAPTURED\]/);
   if (leadMatch && !session.leadCaptured) {
     try {
       const leadData = JSON.parse(leadMatch[1].trim());
-      if (leadData.phone && leadData.phone !== 'val' && leadData.phone !== 'unknown') {
+      if (leadData.phone && leadData.phone !== 'val' && leadData.phone.toLowerCase() !== 'unknown') {
         session.leadCaptured = true;
         await sendLeadEmail(leadData);
         console.log('✅ Lead captured:', leadData.phone);
@@ -288,7 +271,6 @@ async function processReply(reply, session) {
     } catch (e) { console.error('Lead parse error:', e); }
   }
 
-  // Strip ALL tags
   clean = clean
     .replace(/\[LEAD_CAPTURED\][\s\S]*?\[\/LEAD_CAPTURED\]/g, '')
     .replace(/\[\/LEAD_CAPTURED\]/g, '')
